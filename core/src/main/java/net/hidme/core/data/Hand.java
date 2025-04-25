@@ -1,16 +1,20 @@
 package net.hidme.core.data;
 
 /**
- * A hand of cards.
+ * A hand of tiles.
  */
 public abstract class Hand {
 
-    public Hand(short[] cards) {
-        this.cards = cards;
-        this.count = cards.length;
+    public Hand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile) {
+        this.flowers = flowers;
+        this.claims = claims;
+        this.tiles = tiles;
+        this.declaredTile = declaredTile;
     }
 
-    protected final short[] cards;
-    protected final int count;
+    public final Tile[] flowers;
+    public final Claim[] claims;
+    public final Tile[] tiles;
+    public final Tile declaredTile;
 
 }

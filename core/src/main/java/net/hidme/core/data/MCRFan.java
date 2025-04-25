@@ -72,7 +72,7 @@ public enum MCRFan {
     LAST_TILE(4),
 
     DRAGON_PUNG(2),
-    PREVELANT_WIND(2),
+    PREVALENT_WIND(2),
     SEAT_WIND(2),
     CONCEALED_HAND(2),
     ALL_CHOWS(2),
@@ -94,12 +94,12 @@ public enum MCRFan {
     CLOSED_WAIT(1),
     SINGLE_WAIT(1),
     SELF_DRAWN(1),
-    // Flower tiles are not considered
+    FLOWER_TILE(1)
     ;
 
     MCRFan(int score) {
         this.score = score;
     }
 
-    public int score;
+    public final int score;
 }
