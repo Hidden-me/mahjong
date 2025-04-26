@@ -33,7 +33,12 @@ public class MCRResult implements Result {
     }
 
     public void addFan(MCRFan fan) {
-        fans.put(fan, fans.getOrDefault(fan, 0) + 1);
+        addFan(fan, 1);
+    }
+
+    public void addFan(MCRFan fan, int multiplicity) {
+        if (multiplicity < 1) return;
+        fans.put(fan, fans.getOrDefault(fan, 0) + multiplicity);
     }
 
     public void reduceFan(MCRFan fan) {

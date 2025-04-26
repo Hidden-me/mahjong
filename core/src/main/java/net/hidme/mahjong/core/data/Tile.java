@@ -80,6 +80,14 @@ public enum Tile {
         return isNumber() && (number == 1 || number == 9);
     }
 
+    public boolean isSimple() {
+        return isNumber() && (number != 1 && number != 9);
+    }
+
+    public boolean isOrphan() {
+        return isHonor() || isTerminal();
+    }
+
     public boolean isWind() {
         return suit == 'w';
     }
