@@ -1,4 +1,4 @@
-package net.hidme.core.data;
+package net.hidme.mahjong.core.data;
 
 import java.text.ParseException;
 import java.util.*;
@@ -76,12 +76,14 @@ public class MCRHandParser {
         } catch (ParseException e) {
             throw e;
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new ParseException(e.getMessage(), -1);
         }
     }
 
     private List<Claim> parseClaims(String string) throws ParseException {
         final List<Claim> claims = new ArrayList<>();
+        if (string.isEmpty()) return claims;
         final String[] segments = string.split(",");
         for (String segment : segments) {
             claims.add(parseClaim(segment));
@@ -124,15 +126,21 @@ public class MCRHandParser {
         }
         // case: the first tile is a number/flower tile
         char[] suits = {'m', 'p', 's', 'f'};
-        for (char suit : suits) {
-            int index = string.indexOf(suit, fromIndex);
-            if (index != -1) {
-                for (int i = fromIndex; i < index; i++) {
-                    int number = string.charAt(i) - '0';
-                    tiles.add(Tile.getInstance(number, suit));
-                }
-                return index + 1;
+        int index = -1;
+        char suit = 0;
+        for (char tmpSuit : suits) {
+            int tmpIndex = string.indexOf(tmpSuit, fromIndex);
+            if (tmpIndex != -1 && (index == -1 || index > tmpIndex)) {
+                index = tmpIndex;
+                suit = tmpSuit;
             }
+        }
+        if (index != -1) {
+            for (int i = fromIndex; i < index; i++) {
+                int number = string.charAt(i) - '0';
+                tiles.add(Tile.getInstance(number, suit));
+            }
+            return index + 1;
         }
         throw new ParseException("No tile group found in" + string, fromIndex);
     }

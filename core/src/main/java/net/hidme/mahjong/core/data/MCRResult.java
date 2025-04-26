@@ -1,0 +1,69 @@
+package net.hidme.mahjong.core.data;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static net.hidme.mahjong.core.data.MCRFan.*;
+import static net.hidme.mahjong.core.data.MCRFan.CONCEALED_HAND;
+
+/**
+ * The calculation result for MCR (Mahjong Chinese Rule).
+ * It contains the Fan combination and the total Fan score.
+ */
+public class MCRResult implements Result {
+
+    public MCRResult() {
+        fans = new HashMap<>();
+    }
+
+    /**
+     * Get the Fan combination.
+     * @return a map whose values are the multiplicity of each Fan
+     */
+    public Map<MCRFan, Integer> getFanCombination() {
+        return fans;
+    }
+
+    public int getFanTotal() {
+        int total = 0;
+        for (Map.Entry<MCRFan, Integer> fan : fans.entrySet()) {
+            total += fan.getKey().score * fan.getValue();
+        }
+        return total;
+    }
+
+    public void addFan(MCRFan fan) {
+        fans.put(fan, fans.getOrDefault(fan, 0) + 1);
+    }
+
+    public void reduceFan(MCRFan fan) {
+        fans.computeIfPresent(fan, (f, m) -> m <= 1 ? null : m - 1);
+    }
+
+    public void removeFan(MCRFan fan) {
+        fans.remove(fan);
+    }
+
+    public boolean containsFan(MCRFan fan) {
+        return fans.containsKey(fan);
+    }
+
+    // fully concealed hand -> self-drawn
+    // concealed hand -> nothing
+
+    /**
+     * Remove concealed-hand-relative Fans.
+     * Fully concealed hand is reduced to self-drawn.
+     */
+    public void removeConcealedHand() {
+        if (containsFan(FULLY_CONCEALED_HAND)) {
+            removeFan(FULLY_CONCEALED_HAND);
+            addFan(SELF_DRAWN);
+        } else if (containsFan(CONCEALED_HAND)) {
+            removeFan(CONCEALED_HAND);
+        }
+    }
+
+    // the multiplicity of each Fan
+    private Map<MCRFan, Integer> fans;
+}

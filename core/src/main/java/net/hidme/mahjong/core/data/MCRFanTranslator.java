@@ -1,4 +1,4 @@
-package net.hidme.core.data;
+package net.hidme.mahjong.core.data;
 
 /**
  * Translate MCRFan to its name.

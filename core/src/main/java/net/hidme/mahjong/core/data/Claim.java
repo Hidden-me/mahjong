@@ -1,4 +1,4 @@
-package net.hidme.core.data;
+package net.hidme.mahjong.core.data;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,10 +9,10 @@ import java.util.HashSet;
 public record Claim(Type type,  // chow/pung/kong
                     Tile start,  // the smallest tile in a chow, or the tile in a pung/kong
                     int claimedIndex,  // the index of the claimed tile (0/1/2, 1/2 for chow only)
-                    int claimedFrom  // 3 for left, 1 for right, 2 for opposite
+                    int claimedFrom  // 0 for self, 1 for right, 2 for opposite, 3 for left
 ) {
     public enum Type {
-        CHOW, PUNG, KONG
+        CHOW, PUNG, KONG, KNITTED_CHOW
     }
 
     public static Type getType(Collection<Tile> tiles) {
@@ -34,6 +34,15 @@ public record Claim(Type type,  // chow/pung/kong
             return Type.KONG;
         }
         throw new IllegalArgumentException(tiles.size() + " tile(s) must not be a claim");
+    }
+
+    public Tile[] getTiles() {
+        return switch (type) {
+            case CHOW -> new Tile[]{start, start.shift(1), start.shift(2)};
+            case PUNG -> new Tile[]{start, start, start};
+            case KONG -> new Tile[]{start, start, start, start};
+            case KNITTED_CHOW -> new Tile[]{start, start.shift(3), start.shift(6)};
+        };
     }
 
 }

@@ -1,4 +1,4 @@
-package net.hidme.core.data;
+package net.hidme.mahjong.core.data;
 
 public enum MCRFan {
     BIG_FOUR_WINDS(88),

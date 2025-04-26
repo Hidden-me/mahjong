@@ -1,4 +1,4 @@
-package net.hidme.core.data;
+package net.hidme.mahjong.core.data;
 
 import java.text.ParseException;
 
@@ -86,6 +86,10 @@ public enum Tile {
 
     public boolean isDragon() {
         return suit == 'd';
+    }
+
+    public Tile shift(int offset) {
+        return getInstance(number + offset, suit);
     }
 
     public static Tile getInstance(int number, char suit) {

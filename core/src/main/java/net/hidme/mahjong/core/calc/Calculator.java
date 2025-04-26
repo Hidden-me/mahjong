@@ -1,7 +1,7 @@
-package net.hidme.core.calc;
+package net.hidme.mahjong.core.calc;
 
-import net.hidme.core.data.Hand;
-import net.hidme.core.data.Result;
+import net.hidme.mahjong.core.data.Hand;
+import net.hidme.mahjong.core.data.Result;
 
 /**
  * A calculator calculates the score for a Hu hand of tiles.
