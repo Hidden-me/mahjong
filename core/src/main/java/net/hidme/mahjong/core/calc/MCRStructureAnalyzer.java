@@ -178,13 +178,16 @@ public class MCRStructureAnalyzer {
             claims.removeLast();
             tiles.add(firstTile, 3);
         }
-        if (firstCount == 2 && allowsPair) {
+        if (firstCount >= 2 && allowsPair) {
             // try pair
             tiles.remove(firstTile, 2);
             getNumberSuitStructureRecursive(tiles, false, claims, firstTile, structures);
             tiles.add(firstTile, 2);
         }
         // the first tiles are all used in chows
+        if (firstTile.number > 7)
+            // chows must begin at 1-7
+            return;
         int chowCount = firstCount;
         chowCount = Math.min(chowCount, tiles.count(firstTile.next()));
         chowCount = Math.min(chowCount, tiles.count(firstTile.shift(2)));
