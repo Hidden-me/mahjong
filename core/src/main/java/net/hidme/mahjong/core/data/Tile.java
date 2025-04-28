@@ -1,6 +1,10 @@
 package net.hidme.mahjong.core.data;
 
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
+
 import java.text.ParseException;
+import java.util.stream.Stream;
 
 public enum Tile {
 
@@ -96,6 +100,10 @@ public enum Tile {
         return suit == 'd';
     }
 
+    public Tile next() {
+        return shift(1);
+    }
+
     public Tile shift(int offset) {
         return getInstance(number + offset, suit);
     }
@@ -121,6 +129,14 @@ public enum Tile {
             case 'C' -> C;
             default -> throw new ParseException(String.valueOf(honor), 0);
         };
+    }
+
+    /**
+     * Get tiles of the specified suit from {@code tiles}.
+     */
+    public static SortedMultiset<Tile> getTilesOfSuit(SortedMultiset<Tile> tiles, char suit) {
+        return TreeMultiset.create(
+                tiles.stream().filter(t -> t.suit == suit).toList());
     }
 
     private static final Tile[] MANS = {M1, M2, M3, M4, M5, M6, M7, M8, M9};

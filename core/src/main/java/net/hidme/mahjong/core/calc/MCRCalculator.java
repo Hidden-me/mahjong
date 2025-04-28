@@ -24,7 +24,7 @@ public class MCRCalculator implements Calculator {
         if (!(hand instanceof MCRHand mcrHand))
             throw new IllegalArgumentException("incompatible hand type " + hand.getClass().getName());
         final MCRStructureAnalyzer analyzer = new MCRStructureAnalyzer();
-        final List<HandStructure> structures = analyzer.getPossibleStructures(hand);
+        final List<HandStructure> structures = analyzer.getPossibleStructures(mcrHand);
         MCRResult result = new MCRResult();
         // calculate each structure and select the largest Fan result
         for (HandStructure structure : structures) {

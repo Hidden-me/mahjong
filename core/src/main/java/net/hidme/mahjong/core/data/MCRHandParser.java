@@ -92,8 +92,11 @@ public class MCRHandParser {
     }
 
     private Claim parseClaim(String string) throws ParseException {
+        // the last char is the index
         int index = string.charAt(string.length() - 1) - '0';
+        // the rest are tiles
         final List<Tile> tiles = parseTiles(string.substring(0, string.length() - 1));
+        // derive the claim type
         final Claim.Type type = Claim.getType(tiles);
         final SortedSet<Tile> sortedTiles = new TreeSet<>(tiles);
         final Tile startTile = sortedTiles.first();

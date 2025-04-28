@@ -7,6 +7,7 @@ import com.google.common.collect.TreeMultiset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A hand of tiles.
@@ -56,6 +57,10 @@ public abstract class Hand {
         final SortedMultiset<Tile> ret = getHandTilesWithClaims();
         ret.addAll(List.of(flowers));
         return ret;
+    }
+
+    public SortedMultiset<Tile> getHandTilesOfSuit(char suit) {
+        return Tile.getTilesOfSuit(getHandTiles(), suit);
     }
 
     // each tile is finite
