@@ -47,6 +47,10 @@ public class MCRTotalFanCalc {
         checkUpperTiles();
         checkMiddleTiles();
         checkLowerTiles();
+        // 16
+        checkThreeSuitedTerminalChows();
+        checkAllFive();
+        checkThreeConcealedPungs();
         // 12
         checkLesserHonorsAndKnittedTiles();
     }
@@ -61,6 +65,37 @@ public class MCRTotalFanCalc {
         if (structure instanceof HonorKnittedHandStructure) {
             result.addFan(LESSER_HONORS_AND_KNITTED_TILES);
         }
+    }
+
+    // 16
+
+    private void checkThreeSuitedTerminalChows() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        if (!normalStruct.pair.isNumber() || normalStruct.pair.number != 5) return;
+        final char pairSuit = normalStruct.pair.suit;
+        // suits of 123 and suits of 789
+        final Set<Character> chow1Suits = new HashSet<>(), chow7Suits = new HashSet<>();
+        for (Claim claim : normalStruct.claims) {
+            if (claim.type() != CHOW) return;
+            final Tile start = claim.start();
+            if (start.suit == pairSuit) return;
+            if (start.number == 1) chow1Suits.add(start.suit);
+            else if (start.number == 7) chow7Suits.add(start.suit);
+        }
+        if (chow1Suits.size() == 2 && chow7Suits.size() == 2)
+            result.addFan(THREE_SUITED_TERMINAL_CHOWS);
+    }
+
+    private void checkAllFive() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        for (Claim claim : normalStruct.claims) {
+            if (Stream.of(claim.getTiles()).noneMatch(t -> t.isNumber() && t.number == 5)) return;
+        }
+        result.addFan(ALL_FIVE);
+    }
+
+    private void checkThreeConcealedPungs() {
+        checkConcealedPungs(3);
     }
 
     // 24

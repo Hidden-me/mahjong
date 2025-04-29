@@ -3,8 +3,6 @@ package net.hidme.mahjong.core.calc;
 import net.hidme.mahjong.core.data.*;
 
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import static net.hidme.mahjong.core.data.MCRFan.*;
 

@@ -9,6 +9,7 @@ import net.hidme.mahjong.core.util.NumberUtils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.CHOW;
@@ -58,6 +59,10 @@ public class MCRSetFanCalc {
         // 24
         checkPureTripleChow();
         checkPureShiftedPungs();
+        // 16
+        checkPureStraight();
+        checkPureShiftedChows();
+        checkTriplePung();
         // mark all claims as used
         usedClaims.addAll(unusedClaims);
         unusedClaims.clear();
@@ -96,6 +101,7 @@ public class MCRSetFanCalc {
     private final Tile pair;
 
     // 1
+
     private void checkPungOfTerminalsOrHonors() {
         checkSingleSetFan(claim -> claim.start().isOrphan(), PUNG_OF_TERMINALS_OR_HONORS);
     }
@@ -104,6 +110,51 @@ public class MCRSetFanCalc {
 
     private void checkDragonPung() {
         checkSingleSetFan(claim -> claim.start().isOrphan(), DRAGON_PUNG, PUNG_OF_TERMINALS_OR_HONORS);
+    }
+
+    // 16
+
+    private void checkPureStraight() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().anyMatch(c -> c.type() != CHOW))
+                        return null;
+                    if (!isOfPureNumberSuit(claims)) return null;
+                    final Set<Integer> starts = claims.stream()
+                            .map(c -> c.start().number).collect(Collectors.toSet());
+                    if (starts.equals(Set.of(1, 4, 7))) return claims;
+                    return null;
+                },
+                PURE_STRAIGHT
+        );
+    }
+
+    private void checkPureShiftedChows() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().anyMatch(c -> c.type() != CHOW))
+                        return null;
+                    if (!isOfPureNumberSuit(claims)) return null;
+                    final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
+                    if (NumberUtils.isUnorderedArithSeq(numberSeq, 1)
+                            || NumberUtils.isUnorderedArithSeq(numberSeq, 2))
+                        return claims;
+                    return null;
+                },
+                PURE_SHIFTED_CHOWS
+        );
+    }
+
+    private void checkTriplePung() {
+        checkAddThreeSets(
+                claims -> {
+                    final int start = claims.getFirst().start().number;
+                    if (claims.stream().allMatch(c -> c.type().isPung() && c.start().number == start))
+                        return claims;
+                    return null;
+                },
+                TRIPLE_PUNG
+        );
     }
 
     // 24
