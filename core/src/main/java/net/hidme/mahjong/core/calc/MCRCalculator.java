@@ -40,10 +40,10 @@ public class MCRCalculator implements Calculator {
         final MCRResult result = new MCRResult();
         // first check total properties
         new MCRTotalFanCalc(hand, structure, result).calculate();
+        // then check Fans about the declared tile
+        new MCRDeclareFanCalc(hand, structure, result).calculate();
         // then check Fans over sets
         new MCRSetFanCalc(hand, structure, result).calculate();
-        // after that, check Fans about the declared tile
-        new MCRDeclareFanCalc(hand, structure, result).calculate();
         // resolve Fan conflicts
         MCRFanConflictResolver.resolveConflict(result);
         // chicken hand is checked at last

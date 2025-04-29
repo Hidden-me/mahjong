@@ -17,6 +17,10 @@ public record Claim(Type type,  // chow/pung/kong
 ) {
     public enum Type {
         CHOW, PUNG, KONG, KNITTED_CHOW
+
+        public boolean isPung() {
+            return this == PUNG || this == KONG;
+        }
     }
 
     public static Type getType(Collection<Tile> tiles) {

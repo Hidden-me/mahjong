@@ -1,5 +1,8 @@
 package net.hidme.mahjong.core.calc;
 
+import com.google.common.collect.Multiset;
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
 import net.hidme.mahjong.core.util.NumberUtils;
 
@@ -9,8 +12,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.CHOW;
-import static net.hidme.mahjong.core.data.Claim.Type.PUNG;
 import static net.hidme.mahjong.core.data.MCRFan.*;
+import static net.hidme.mahjong.core.util.CollectionUtils.minus;
 import static net.hidme.mahjong.core.util.CollectionUtils.setOf;
 
 /**
@@ -45,10 +48,16 @@ public class MCRSetFanCalc {
         checkBigFourWinds();
         checkBigThreeDragons();
         // 64
+        checkLittleFourWinds();
         checkLittleThreeDragons();
         // 48
         checkQuadrupleChow();
         checkFourPureShiftedPungs();
+        // 32
+        checkFourPureShiftedChows();
+        // 24
+        checkPureTripleChow();
+        checkPureShiftedPungs();
         // mark all claims as used
         usedClaims.addAll(unusedClaims);
         unusedClaims.clear();
@@ -97,6 +106,54 @@ public class MCRSetFanCalc {
         checkSingleSetFan(claim -> claim.start().isOrphan(), DRAGON_PUNG, PUNG_OF_TERMINALS_OR_HONORS);
     }
 
+    // 24
+
+    private void checkPureTripleChow() {
+        checkAddThreeSets(
+                claims -> {
+                    final Tile start = claims.getFirst().start();
+                    if (claims.stream().allMatch(c -> c.type() == CHOW && c.start() == start))
+                        return claims;
+                    return null;
+                },
+                PURE_TRIPLE_CHOW
+        );
+    }
+
+    private void checkPureShiftedPungs() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().anyMatch(c -> !c.type().isPung()))
+                        return null;
+                    if (!isOfPureNumberSuit(claims)) return null;
+                    final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
+                    if (NumberUtils.isUnorderedArithSeq(numberSeq, 1))
+                        return claims;
+                    return null;
+                },
+                PURE_SHIFTED_PUNGS
+        );
+    }
+
+    // 32
+
+    private void checkFourPureShiftedChows() {
+        checkAdd(
+                claims -> {
+                    if (claims.size() != 4) return null;
+                    if (claims.stream().anyMatch(c -> c.type() != CHOW))
+                        return null;
+                    if (!isOfPureNumberSuit(claims)) return null;
+                    final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
+                    if (NumberUtils.isUnorderedArithSeq(numberSeq, 1)
+                            || NumberUtils.isUnorderedArithSeq(numberSeq, 2))
+                        return claims;
+                    return null;
+                },
+                FOUR_PURE_SHIFTED_CHOWS
+        );
+    }
+
     // 48
 
     private void checkQuadrupleChow() {
@@ -116,7 +173,7 @@ public class MCRSetFanCalc {
         checkAdd(
                 claims -> {
                     if (claims.size() != 4) return null;
-                    if (claims.stream().anyMatch(c -> c.type() != PUNG))
+                    if (claims.stream().anyMatch(c -> c.type().isPung()))
                         return null;
                     if (!isOfPureNumberSuit(claims)) return null;
                     final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
@@ -210,6 +267,29 @@ public class MCRSetFanCalc {
                 suppressedClaim.suppress.addAll(suppress);
             }
         }
+    }
+
+    /**
+     * Check whether the required sets of a 3-set Fan exist.
+     * If so, add this Fan and consume involved sets.
+     * You may assume that the input of target must be 3 sets.
+     */
+    private void checkAddThreeSets(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
+                                    MCRFan fan) {
+        checkAdd(
+                claims -> {
+                    if (claims.size() == 4) {
+                        for (int i = 0; i < 4; i++) {
+                            final List<SuppressedClaim> threeSets = minus(claims, i);
+                            final List<SuppressedClaim> ret = target.apply(threeSets);
+                            if (ret != null) return ret;
+                        }
+                    } else if (claims.size() == 3) {
+                        return target.apply(claims);
+                    }
+                    return null;
+                },
+                fan);
     }
 
     private void checkAdd(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,

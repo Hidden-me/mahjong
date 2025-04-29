@@ -5,6 +5,7 @@ import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.*;
@@ -36,9 +37,16 @@ public class MCRTotalFanCalc {
         checkFourConcealedPungs();
         checkPureTerminalChows();
         // 32
+        checkThreeKongs();
+        checkAllTerminalsAndHonors();
         // 24
         checkSevenPairs();
         checkGreaterHonorsAndKnittedTiles();
+        checkAllEvenPungs();
+        checkFullFlush();
+        checkUpperTiles();
+        checkMiddleTiles();
+        checkLowerTiles();
         // 12
         checkLesserHonorsAndKnittedTiles();
     }
@@ -70,7 +78,37 @@ public class MCRTotalFanCalc {
         }
     }
 
+    private void checkAllEvenPungs() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        for (Claim claim : normalStruct.claims) {
+            if (!claim.type().isPung() || claim.start().number % 2 != 0) return;
+        }
+        result.addFan(ALL_EVEN_PUNGS);
+    }
+
+    private void checkFullFlush() {
+        if (hand.isOfPureNumberSuit()) {
+            result.addFan(FULL_FLUSH);
+        }
+    }
+
+    private void checkUpperTiles() {
+        checkNumberHand(i -> i >= 7, UPPER_TILES);
+    }
+
+    private void checkMiddleTiles() {
+        checkNumberHand(i -> i >= 4 && i <= 6, MIDDLE_TILES);
+    }
+
+    private void checkLowerTiles() {
+        checkNumberHand(i -> i <= 3, LOWER_TILES);
+    }
+
     // 32
+
+    private void checkThreeKongs() {
+        checkKongs(3);
+    }
 
     private void checkAllTerminalsAndHonors() {
         if (hand.getHandTilesWithClaims().stream().allMatch(Tile::isOrphan)) {
@@ -160,6 +198,13 @@ public class MCRTotalFanCalc {
 
     // utilities
 
+    private void checkNumberHand(Predicate<Integer> numberRequirement, MCRFan fan) {
+        if (!hand.isOfPureNumberSuit()) return;
+        if (hand.getHandTilesWithClaims().stream().allMatch(t -> numberRequirement.test(t.number))) {
+            result.addFan(fan);
+        }
+    }
+
     private static final MCRFan[] FAN_CONCEALED_PUNGS = {null, null, TWO_CONCEALED_PUNGS, THREE_CONCEALED_PUNGS, FOUR_CONCEALED_PUNGS};
     private static final MCRFan[] FAN_KONGS = {null, null, null, THREE_KONGS, FOUR_KONGS};
 
@@ -167,7 +212,7 @@ public class MCRTotalFanCalc {
     private void checkConcealedPungs(int pungCount) {
         if (!(structure instanceof NormalHandStructure normalStruct)) return;
         if (Stream.of(normalStruct.claims)
-                .filter(c -> c.type() == PUNG && c.claimedFrom() == 0)
+                .filter(c -> c.type().isPung() && c.claimedFrom() == 0)
                 .count() == pungCount) {
             result.addFan(FAN_CONCEALED_PUNGS[pungCount]);
         }
