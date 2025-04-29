@@ -1,7 +1,11 @@
 package net.hidme.mahjong.core.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+
+import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
 
 /**
  * A claim is a chow/pung/kong.
@@ -34,6 +38,20 @@ public record Claim(Type type,  // chow/pung/kong
             return Type.KONG;
         }
         throw new IllegalArgumentException(tiles.size() + " tile(s) must not be a claim");
+    }
+
+    public static boolean isOfPureNumberSuit(Collection<Claim> claims) {
+        char[] suits = Tile.getSuits(getTiles(claims));
+        if (suits.length != 1) return false;
+        return isNumberSuit(suits[0]);
+    }
+
+    public static List<Tile> getTiles(Collection<Claim> claims) {
+        final List<Tile> tiles = new ArrayList<>();
+        for (Claim claim : claims) {
+            tiles.addAll(List.of(claim.getTiles()));
+        }
+        return tiles;
     }
 
     public Tile[] getTiles() {

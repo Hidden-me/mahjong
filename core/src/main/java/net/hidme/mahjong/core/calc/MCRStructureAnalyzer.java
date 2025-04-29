@@ -223,7 +223,7 @@ public class MCRStructureAnalyzer {
     }
 
     private void addPairStructure(MCRHand hand, List<HandStructure> structures) {
-        if (hand.claims.length != 0) return;
+        if (hand.hasClaim()) return;
         final Multiset<Tile> tiles = hand.getHandTiles();
         if (tiles.entrySet().stream().allMatch(e -> e.getCount() % 2 == 0)) {
             final List<Tile> pairs = new ArrayList<>();
@@ -236,7 +236,7 @@ public class MCRStructureAnalyzer {
     }
 
     private void addOrphanStructure(MCRHand hand, List<HandStructure> structures) {
-        if (hand.claims.length != 0) return;
+        if (hand.hasClaim()) return;
         final Multiset<Tile> tiles = hand.getHandTiles();
         if (tiles.entrySet().size() != 13) return;
         Tile doubleTile = null;
@@ -249,7 +249,7 @@ public class MCRStructureAnalyzer {
     }
 
     private void addHonorKnittedStructure(MCRHand hand, List<HandStructure> structures) {
-        if (hand.claims.length != 0) return;
+        if (hand.hasClaim()) return;
         final Multiset<Tile> tiles = hand.getHandTiles();
         if (tiles.entrySet().size() != 14) return;
         final List<Tile> honors = new ArrayList<>(), knittedTiles = new ArrayList<>();

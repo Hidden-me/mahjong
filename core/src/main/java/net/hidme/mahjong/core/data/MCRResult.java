@@ -53,14 +53,17 @@ public class MCRResult implements Result {
         return fans.containsKey(fan);
     }
 
-    // fully concealed hand -> self-drawn
-    // concealed hand -> nothing
+    public boolean isEmpty() {
+        return fans.isEmpty();
+    }
 
     /**
      * Remove concealed-hand-relative Fans.
      * Fully concealed hand is reduced to self-drawn.
      */
     public void removeConcealedHand() {
+        // fully concealed hand -> self-drawn
+        // concealed hand -> nothing
         if (containsFan(FULLY_CONCEALED_HAND)) {
             removeFan(FULLY_CONCEALED_HAND);
             addFan(SELF_DRAWN);

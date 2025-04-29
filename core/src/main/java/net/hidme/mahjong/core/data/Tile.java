@@ -4,7 +4,9 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 
 import java.text.ParseException;
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public enum Tile {
 
@@ -69,11 +71,11 @@ public enum Tile {
     public final char suit;
 
     public boolean isNumber() {
-        return suit == 'm' || suit == 's' || suit == 'p';
+        return isNumberSuit(suit);
     }
 
     public boolean isHonor() {
-        return suit == 'w' || suit == 'd';
+        return isHonorSuit(suit);
     }
 
     public boolean isFlower() {
@@ -108,6 +110,14 @@ public enum Tile {
         return getInstance(number + offset, suit);
     }
 
+    public static boolean isNumberSuit(char suit) {
+        return suit == 'm' || suit == 's' || suit == 'p';
+    }
+
+    public static boolean isHonorSuit(char suit) {
+        return suit == 'w' || suit == 'd';
+    }
+
     public static Tile getInstance(int number, char suit) {
         if (suit == 'm') return MANS[number - 1];
         if (suit == 'p') return DOTS[number - 1];
@@ -137,6 +147,18 @@ public enum Tile {
     public static SortedMultiset<Tile> getTilesOfSuit(SortedMultiset<Tile> tiles, char suit) {
         return TreeMultiset.create(
                 tiles.stream().filter(t -> t.suit == suit).toList());
+    }
+
+    public static char[] getSuits(Collection<Tile> tiles) {
+        Set<Character> suits = new HashSet<>();
+        for (Tile tile : tiles) {
+            suits.add(tile.suit);
+        }
+        final char[] ret = new char[suits.size()];
+        int i = 0;
+        for (Character suit : suits)
+            ret[i++] = suit;
+        return ret;
     }
 
     private static final Tile[] MANS = {M1, M2, M3, M4, M5, M6, M7, M8, M9};

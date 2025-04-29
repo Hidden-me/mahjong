@@ -1,11 +1,15 @@
 package net.hidme.mahjong.core.calc;
 
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.Claim;
 import net.hidme.mahjong.core.data.Tile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static net.hidme.mahjong.core.data.Claim.Type.*;
 
 public class NormalHandStructure implements HandStructure {
     Claim[] claims;
@@ -33,4 +37,21 @@ public class NormalHandStructure implements HandStructure {
         else if (s2.pair == null) pair = s1.pair;
         else throw new IllegalArgumentException("There should be no more than 1 pair");
     }
+
+    public boolean chowsOnly() {
+        return Stream.of(claims).allMatch(c -> c.type() == CHOW);
+    }
+
+    public boolean pungsOnly() {
+        return Stream.of(claims).allMatch(c -> c.type() == PUNG || c.type() == KONG);
+    }
+
+    public SortedMultiset<Integer> getClaimStartNumbers() {
+        final SortedMultiset<Integer> ret = TreeMultiset.create();
+        for (Claim claim : claims) {
+            ret.add(claim.start().number);
+        }
+        return ret;
+    }
+
 }

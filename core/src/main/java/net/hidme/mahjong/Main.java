@@ -22,6 +22,10 @@ public class Main {
 //        System.out.println(set.size());
         MCRHandParser parser = new MCRHandParser();
         MCRCalculator calculator = new MCRCalculator();
+        calculator.calculate(parser.parse("12f;;123mSSSNNNWWWEE;E,E,1,0,0,0"));
+
+        calculator.calculate(parser.parse("12f;;147m258sNNNWWWEE;E,E,1,0,0,0"));
+        calculator.calculate(parser.parse("12f;;147p369sNNNWWWEE;E,E,1,0,0,0"));
         calculator.calculate(parser.parse("12f;;147m258p123469sEE;E,E,1,0,0,0"));
         calculator.calculate(parser.parse("12f;;147m258p368sCCCEE;E,E,1,0,0,0"));
         calculator.calculate(parser.parse("12f;;147m259p368sCCCEE;E,E,1,0,0,0"));

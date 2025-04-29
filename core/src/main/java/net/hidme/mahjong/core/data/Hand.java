@@ -5,9 +5,11 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Set;
+
+import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
 
 /**
  * A hand of tiles.
@@ -61,6 +63,16 @@ public abstract class Hand {
 
     public SortedMultiset<Tile> getHandTilesOfSuit(char suit) {
         return Tile.getTilesOfSuit(getHandTiles(), suit);
+    }
+
+    public boolean hasClaim() {
+        return claims.length != 0;
+    }
+
+    public boolean isOfPureNumberSuit() {
+        char[] suits = Tile.getSuits(getHandTilesWithClaims());
+        if (suits.length != 1) return false;
+        return isNumberSuit(suits[0]);
     }
 
     // each tile is finite
