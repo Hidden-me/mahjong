@@ -1,11 +1,13 @@
 package net.hidme.mahjong.core.calc;
 
+import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.*;
@@ -53,11 +55,167 @@ public class MCRTotalFanCalc {
         checkThreeConcealedPungs();
         // 12
         checkLesserHonorsAndKnittedTiles();
+        checkUpperFour();
+        checkLowerFour();
+        // 8
+        checkReversibleTiles();
+        checkLastTileDraw();
+        checkLastTileClaim();
+        checkOutWithReplacementTile();
+        checkRobbingTheKong();
+        // 6
+        checkAllPungs();
+        checkHalfFlush();
+        checkAllTypes();
+        checkMeldedHand();
+        checkTwoConcealedKongs();
+        // 5
+        checkConcealedAndMeldedKongs();
+        // 4
+        checkOutsideHand();
+        checkFullyConcealedHand();
+        checkTwoMeldedKongs();
+        checkLastTile();
+        // 2
+        checkConcealedHand();
+        checkAllChows();
+        checkTileHog();
+        checkTwoConcealedPungs();
+        checkConcealedKong();
+        checkAllSimples();
     }
 
     private final MCRHand hand;
     private final HandStructure structure;
     private final MCRResult result;
+
+    // 2
+
+    private void checkConcealedHand() {
+        if (hand.claims.length == 0)
+            result.addFan(CONCEALED_HAND);
+    }
+
+    private void checkAllChows() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        if (normalStruct.chowsOnly() && !normalStruct.pair.isHonor())
+            result.addFan(ALL_CHOWS);
+    }
+
+    private void checkTileHog() {
+        final Set<Tile> kongTiles = Stream.of(hand.claims)
+                .filter(c -> c.type() == KONG)
+                .map(Claim::start)
+                .collect(Collectors.toSet());
+        for (Multiset.Entry<Tile> entry : hand.getHandTilesWithClaims().entrySet()) {
+            if (entry.getCount() == 4 && !kongTiles.contains(entry.getElement()))
+                result.addFan(TILE_HOG);
+        }
+    }
+
+    private void checkTwoConcealedPungs() {
+        checkConcealedPungs(2);
+    }
+
+    private void checkConcealedKong() {
+        checkOneKong(1);
+    }
+
+    private void checkAllSimples() {
+        if (hand.getHandTilesWithClaims().stream().noneMatch(Tile::isOrphan))
+            result.addFan(ALL_SIMPLES);
+    }
+
+    // 4
+
+    private void checkOutsideHand() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        if (!normalStruct.pair.isOrphan()) return;
+        if (Stream.of(normalStruct.claims)
+                .allMatch(c -> Stream.of(c.getTiles()).anyMatch(Tile::isOrphan)))
+            result.addFan(OUTSIDE_HAND);
+    }
+
+    private void checkFullyConcealedHand() {
+        if (hand.claims.length == 0 && hand.selfDrawn)
+            result.addFan(FULLY_CONCEALED_HAND);
+    }
+
+    private void checkTwoMeldedKongs() {
+        checkTwoKongs(0);
+    }
+
+    private void checkLastTile() {
+        if (hand.lastTile)
+            result.addFan(LAST_TILE);
+    }
+
+    // 5
+
+    private void checkConcealedAndMeldedKongs() {
+        checkTwoKongs(1);
+    }
+
+    // 6
+
+    private void checkAllPungs() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        if (normalStruct.pungsOnly())
+            result.addFan(ALL_PUNGS);
+    }
+
+    private void checkHalfFlush() {
+        final Set<Character> suits = getSuitSet(hand.getHandTilesWithClaims());
+        if (!suits.contains('w') && !suits.contains('d')) return;
+        suits.removeAll(List.of('w', 'd'));
+        if (suits.size() == 1)
+            result.addFan(HALF_FLUSH);
+    }
+
+    private void checkAllTypes() {
+        if (getSuits(hand.getHandTilesWithClaims()).length == 5)
+            result.addFan(ALL_TYPES);
+    }
+
+    private void checkMeldedHand() {
+        if (hand.claims.length == 4 && !hand.selfDrawn)
+            result.addFan(MELDED_HAND);
+    }
+
+    private void checkTwoConcealedKongs() {
+        checkTwoKongs(2);
+    }
+
+    // 8
+
+    private static final Set<Tile> REVERSIBLE_TILE_SET = Set.of(
+            P1, P2, P3, P4, P5, P8, P9, S2, S4, S5, S6, S8, S9, P
+    );
+
+    private void checkReversibleTiles() {
+        if (REVERSIBLE_TILE_SET.containsAll(hand.getHandTilesWithClaims()))
+            result.addFan(REVERSIBLE_TILES);
+    }
+
+    private void checkLastTileDraw() {
+        if (hand.lastDrawOrClaim && hand.selfDrawn)
+            result.addFan(LAST_TILE_DRAW);
+    }
+
+    private void checkLastTileClaim() {
+        if (hand.lastDrawOrClaim && !hand.selfDrawn)
+            result.addFan(LAST_TILE_CLAIM);
+    }
+
+    private void checkOutWithReplacementTile() {
+        if (hand.kong && hand.selfDrawn)
+            result.addFan(OUT_WITH_REPLACEMENT_TILE);
+    }
+
+    private void checkRobbingTheKong() {
+        if (hand.kong && !hand.selfDrawn)
+            result.addFan(ROBBING_THE_KONG);
+    }
 
     // 12
 
@@ -65,6 +223,14 @@ public class MCRTotalFanCalc {
         if (structure instanceof HonorKnittedHandStructure) {
             result.addFan(LESSER_HONORS_AND_KNITTED_TILES);
         }
+    }
+
+    private void checkUpperFour() {
+        checkNumberHand(i -> i >= 6, UPPER_FOUR);
+    }
+
+    private void checkLowerFour() {
+        checkNumberHand(i -> i <= 4, LOWER_FOUR);
     }
 
     // 16
@@ -232,6 +398,39 @@ public class MCRTotalFanCalc {
     }
 
     // utilities
+
+    private static final MCRFan[] FAN_ONE_KONG = {MELDED_KONG, CONCEALED_KONG};
+
+    private void checkOneKong(int concealedCount) {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        // exactly 1 kong
+        final List<Claim> claims = Stream.of(normalStruct.claims)
+                .filter(c -> c.type() == KONG).toList();
+        if (claims.size() != 1) return;
+        // check the count of concealed kongs
+        final Claim claim = claims.getFirst();
+        if ((claim.claimedFrom() == 0 ? 1 : 0) == concealedCount) {
+            result.addFan(FAN_ONE_KONG[concealedCount]);
+        }
+    }
+
+    private static final MCRFan[] FAN_TWO_KONGS = {TWO_MELDED_KONGS, CONCEALED_AND_MELDED_KONGS, TWO_CONCEALED_KONGS};
+
+    private void checkTwoKongs(int concealedCount) {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        // exactly 2 kongs
+        if (Stream.of(normalStruct.claims)
+                .filter(c -> c.type() == KONG)
+                .count() != 2) {
+            return;
+        }
+        // check the count of concealed kongs
+        if (Stream.of(normalStruct.claims)
+                .filter(c -> c.type() == KONG && c.claimedFrom() == 0)
+                .count() == concealedCount) {
+            result.addFan(FAN_TWO_KONGS[concealedCount]);
+        }
+    }
 
     private void checkNumberHand(Predicate<Integer> numberRequirement, MCRFan fan) {
         if (!hand.isOfPureNumberSuit()) return;

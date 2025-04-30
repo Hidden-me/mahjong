@@ -16,7 +16,7 @@ public record Claim(Type type,  // chow/pung/kong
                     int claimedFrom  // 0 for self, 1 for right, 2 for opposite, 3 for left
 ) {
     public enum Type {
-        CHOW, PUNG, KONG, KNITTED_CHOW
+        CHOW, PUNG, KONG, KNITTED_CHOW;
 
         public boolean isPung() {
             return this == PUNG || this == KONG;
@@ -45,9 +45,13 @@ public record Claim(Type type,  // chow/pung/kong
     }
 
     public static boolean isOfPureNumberSuit(Collection<Claim> claims) {
-        char[] suits = Tile.getSuits(getTiles(claims));
+        char[] suits = getSuits(claims);
         if (suits.length != 1) return false;
         return isNumberSuit(suits[0]);
+    }
+
+    public static char[] getSuits(Collection<Claim> claims) {
+        return Tile.getSuits(getTiles(claims));
     }
 
     public static List<Tile> getTiles(Collection<Claim> claims) {

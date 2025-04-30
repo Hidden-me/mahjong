@@ -13,7 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.CHOW;
+import static net.hidme.mahjong.core.data.Claim.Type.KNITTED_CHOW;
+import static net.hidme.mahjong.core.data.Claim.getSuits;
 import static net.hidme.mahjong.core.data.MCRFan.*;
+import static net.hidme.mahjong.core.data.Tile.wind;
 import static net.hidme.mahjong.core.util.CollectionUtils.minus;
 import static net.hidme.mahjong.core.util.CollectionUtils.setOf;
 
@@ -63,6 +66,18 @@ public class MCRSetFanCalc {
         checkPureStraight();
         checkPureShiftedChows();
         checkTriplePung();
+        // 12
+        checkKnittedStraight();
+        checkBigThreeWinds();
+        // 8
+        checkMixedStraight();
+        checkMixedShiftedChows();
+        checkMixedShiftedPungs();
+        // 6
+        checkMixedShiftedChows();
+        checkTwoDragonPungs();
+        // 2
+        checkDoublePung();
         // mark all claims as used
         usedClaims.addAll(unusedClaims);
         unusedClaims.clear();
@@ -71,6 +86,8 @@ public class MCRSetFanCalc {
     private void calculateSingleSetFans() {
         // 2
         checkDragonPung();
+        checkPrevalentWind();
+        checkSeatWind();
         // 1
         checkPungOfTerminalsOrHonors();
     }
@@ -109,7 +126,149 @@ public class MCRSetFanCalc {
     // 2
 
     private void checkDragonPung() {
-        checkSingleSetFan(claim -> claim.start().isOrphan(), DRAGON_PUNG, PUNG_OF_TERMINALS_OR_HONORS);
+        checkSingleSetFan(claim -> claim.start().isDragon(), DRAGON_PUNG, PUNG_OF_TERMINALS_OR_HONORS);
+    }
+
+    private void checkPrevalentWind() {
+        checkSingleSetFan(claim -> claim.start() == wind(hand.prevalentWind), PREVALENT_WIND, PUNG_OF_TERMINALS_OR_HONORS);
+    }
+
+    private void checkSeatWind() {
+        checkSingleSetFan(claim -> claim.start() == wind(hand.seatWind), SEAT_WIND, PUNG_OF_TERMINALS_OR_HONORS);
+    }
+
+    private void checkDoublePung() {
+        checkAddTwoSets(
+                claims -> {
+                    final SuppressedClaim c1 = claims.get(0), c2 = claims.get(1);
+                    if (c1.type().isPung() && c2.type().isPung()) {
+                        final Tile t1 = c1.start(), t2 = c2.start();
+                        if (t1.isHonor() || t2.isHonor()) return null;
+                        if (t1.number == t2.number) return claims;
+                    }
+                    return null;
+                },
+                TWO_DRAGON_PUNGS
+        );
+    }
+
+    // 6
+
+    private void checkMixedShiftedChows() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().anyMatch(c -> c.type() != CHOW))
+                        return null;
+                    if (claims.stream().map(c -> c.start().suit)
+                            .collect(Collectors.toSet())
+                            .size() != 3)
+                        return null;
+                    final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
+                    if (NumberUtils.isUnorderedArithSeq(numberSeq, 1))
+                        return claims;
+                    return null;
+                },
+                MIXED_SHIFTED_CHOWS
+        );
+    }
+
+    private void checkTwoDragonPungs() {
+        checkAddTwoSets(
+                claims -> {
+                    if (claims.stream().allMatch(c -> c.start().isDragon()))
+                        return claims;
+                    return null;
+                },
+                TWO_DRAGON_PUNGS
+        );
+    }
+
+    // 8
+
+    private void checkMixedStraight() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().map(c -> c.start().suit)
+                            .collect(Collectors.toSet())
+                            .size() != 3)
+                        return null;
+                    if (claims.stream().anyMatch(c -> c.type() != CHOW))
+                        return null;
+                    final Set<Integer> starts = claims.stream()
+                            .map(c -> c.start().number).collect(Collectors.toSet());
+                    if (starts.equals(Set.of(1, 4, 7))) return claims;
+                    return null;
+                },
+                MIXED_STRAIGHT
+        );
+    }
+
+    private void checkMixedTripleChow() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().map(c -> c.start().suit)
+                            .collect(Collectors.toSet())
+                            .size() != 3)
+                        return null;
+                    final int start = claims.getFirst().start().number;
+                    if (claims.stream().allMatch(c -> c.type() == CHOW && c.start().number == start))
+                        return claims;
+                    return null;
+                },
+                MIXED_TRIPLE_CHOW
+        );
+    }
+
+    private void checkMixedShiftedPungs() {
+        checkAddThreeSets(
+                claims -> {
+                    if (claims.stream().anyMatch(c -> !c.type().isPung()))
+                        return null;
+                    if (claims.stream().map(c -> c.start().suit)
+                            .collect(Collectors.toSet())
+                            .size() != 3)
+                        return null;
+                    final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
+                    if (NumberUtils.isUnorderedArithSeq(numberSeq, 1))
+                        return claims;
+                    return null;
+                },
+                MIXED_SHIFTED_PUNGS
+        );
+    }
+
+    // 12
+
+    private void checkKnittedStraight() {
+        checkAdd(
+                claims -> {
+                    final List<SuppressedClaim> target = claims.stream()
+                            .filter(c -> c.type() == KNITTED_CHOW).toList();
+                    if (target.size() != 3) return null;
+                    final Set<Integer> starts = target.stream()
+                            .map(c -> c.start().number)
+                            .collect(Collectors.toSet());
+                    final Set<Character> suits = target.stream()
+                            .map(c -> c.start().suit)
+                            .collect(Collectors.toSet());
+                    if (starts.size() == 3 && suits.size() == 3) return target;
+                    return null;
+                },
+                KNITTED_STRAIGHT
+        );
+    }
+
+    private void checkBigThreeWinds() {
+        checkAddSuppress(
+                claims -> {
+                    final List<SuppressedClaim> target = claims.stream()
+                            .filter(c -> c.start().isWind()).toList();
+                    if (target.size() == 3) return target;
+                    return null;
+                },
+                BIG_THREE_WINDS,
+                setOf(PUNG_OF_TERMINALS_OR_HONORS)
+        );
     }
 
     // 16
@@ -248,7 +407,7 @@ public class MCRSetFanCalc {
                     return null;
                 },
                 LITTLE_FOUR_WINDS,
-                setOf(PREVALENT_WIND, SEAT_WIND, PUNG_OF_TERMINALS_OR_HONORS)
+                setOf(PUNG_OF_TERMINALS_OR_HONORS)
         );
     }
 
@@ -318,6 +477,28 @@ public class MCRSetFanCalc {
                 suppressedClaim.suppress.addAll(suppress);
             }
         }
+    }
+
+    /**
+     * Check whether the required sets of a 2-set Fan exist.
+     * If so, add this Fan and consume involved sets until the Fan is not met.
+     * You may assume that the input of target must be 2 sets.
+     */
+    private void checkAddTwoSets(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
+                                   MCRFan fan) {
+        checkAdd(
+                claims -> {
+                    if (claims.size() <= 1) return null;
+                    for (int i = 0, bound = claims.size() - 1; i < bound; i++) {
+                        for (int j = i + 1, bound1 = claims.size(); j < bound1; j++) {
+                            final List<SuppressedClaim> twoSets = new ArrayList<>(List.of(claims.get(i), claims.get(j)));
+                            final List<SuppressedClaim> ret = target.apply(twoSets);
+                            if (ret != null) return ret;
+                        }
+                    }
+                    return null;
+                },
+                fan);
     }
 
     /**

@@ -43,7 +43,7 @@ public class NormalHandStructure implements HandStructure {
     }
 
     public boolean pungsOnly() {
-        return Stream.of(claims).allMatch(c -> c.type() == PUNG || c.type() == KONG);
+        return Stream.of(claims).allMatch(c -> c.type().isPung());
     }
 
     public SortedMultiset<Integer> getClaimStartNumbers() {

@@ -6,7 +6,9 @@ import com.google.common.collect.TreeMultiset;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public enum Tile {
 
@@ -150,15 +152,29 @@ public enum Tile {
     }
 
     public static char[] getSuits(Collection<Tile> tiles) {
-        Set<Character> suits = new HashSet<>();
-        for (Tile tile : tiles) {
-            suits.add(tile.suit);
-        }
+        final Set<Character> suits = getSuitSet(tiles);
         final char[] ret = new char[suits.size()];
         int i = 0;
         for (Character suit : suits)
             ret[i++] = suit;
         return ret;
+    }
+
+    public static Set<Character> getSuitSet(Collection<Tile> tiles) {
+        final Set<Character> suits = new HashSet<>();
+        for (Tile tile : tiles) {
+            suits.add(tile.suit);
+        }
+        return suits;
+    }
+
+    public static Tile wind(Wind wind) {
+        return switch (wind) {
+            case EAST -> E;
+            case SOUTH -> S;
+            case WEST -> W;
+            case NORTH -> N;
+        };
     }
 
     private static final Tile[] MANS = {M1, M2, M3, M4, M5, M6, M7, M8, M9};
