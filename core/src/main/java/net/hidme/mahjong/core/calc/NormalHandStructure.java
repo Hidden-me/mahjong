@@ -6,6 +6,7 @@ import net.hidme.mahjong.core.data.Claim;
 import net.hidme.mahjong.core.data.Tile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,6 +23,14 @@ public class NormalHandStructure implements HandStructure {
     public NormalHandStructure(Claim[] claims, Tile pair) {
         this.claims = claims;
         this.pair = pair;
+    }
+
+    /**
+     * Get a copy of an existing structure.
+     */
+    public NormalHandStructure(NormalHandStructure s) {
+        claims = Arrays.copyOf(s.claims, s.claims.length);
+        pair = s.pair;
     }
 
     /**

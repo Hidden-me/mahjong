@@ -231,8 +231,12 @@ public class MCRTotalFanCalc {
     }
 
     private void checkMeldedHand() {
-        if (hand.claims.length == 4 && !hand.selfDrawn)
+        if (hand.claims.length == 4 && !hand.selfDrawn) {
+            for (Claim claim : hand.claims) {
+                if (claim.claimedFrom() == 0) return;
+            }
             result.addFan(MELDED_HAND);
+        }
     }
 
     private void checkTwoConcealedKongs() {

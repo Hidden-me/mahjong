@@ -10,12 +10,41 @@ import java.util.*;
 public class MCRStructureAnalyzer {
 
     public List<HandStructure> getPossibleStructures(MCRHand hand) {
-        final List<HandStructure> structures = new ArrayList<>();
+        final List<HandStructure> structures = new LinkedList<>();
         addNormalStructure(hand, structures);
         addPairStructure(hand, structures);
         addOrphanStructure(hand, structures);
         addHonorKnittedStructure(hand, structures);
+        if (!hand.selfDrawn)
+            setSourceOfDeclaredTile(structures, hand.declaredTile);
         return structures;
+    }
+
+    // assign claimedFrom of the declared claim if not self-drawn
+    private void setSourceOfDeclaredTile(List<HandStructure> structures, Tile declaredTile) {
+        final List<HandStructure> oldStructures = new ArrayList<>(structures);
+        for (HandStructure structure : oldStructures) {
+            if (structure instanceof NormalHandStructure normalStruct) {
+                boolean added = false;
+                for (int i = 0, bound = normalStruct.claims.length; i < bound; i++) {
+                    final Claim claim = normalStruct.claims[i];
+                    if (claim.claimedFrom() == 0 && claim.getTileSet().contains(declaredTile)) {
+                        // Notes:
+                        // Such a claim must be in hand.
+                        // A concealed kong must not contain the declared tile,
+                        // since it must use up all 4 tiles.
+                        final NormalHandStructure newStruct = new NormalHandStructure(normalStruct);
+                        newStruct.claims[i] = new Claim(newStruct.claims[i].type(),
+                                newStruct.claims[i].start(),
+                                newStruct.claims[i].claimedIndex(),
+                                1);
+                        structures.add(newStruct);
+                        added = true;
+                    }
+                }
+                if (added) structures.remove(structure);
+            }
+        }
     }
 
     private void addNormalStructure(MCRHand hand, List<HandStructure> structures) {

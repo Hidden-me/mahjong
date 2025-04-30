@@ -122,7 +122,7 @@ public class MCRSetFanCalc {
     // 1
 
     private void checkPureDoubleChow() {
-        checkAddOneSetWithUsedSet(
+        checkAddOneSetWithUsedSetOrTwoSets(
                 (c1, c2) -> {
                     if (c1.type() == CHOW && c2.type() == CHOW) {
                         final Tile t1 = c1.start(), t2 = c2.start();
@@ -135,7 +135,7 @@ public class MCRSetFanCalc {
     }
 
     private void checkMixedDoubleChow() {
-        checkAddOneSetWithUsedSet(
+        checkAddOneSetWithUsedSetOrTwoSets(
                 (c1, c2) -> {
                     if (c1.type() == CHOW && c2.type() == CHOW) {
                         final Tile t1 = c1.start(), t2 = c2.start();
@@ -148,7 +148,7 @@ public class MCRSetFanCalc {
     }
 
     private void checkShortStraight() {
-        checkAddOneSetWithUsedSet(
+        checkAddOneSetWithUsedSetOrTwoSets(
                 (c1, c2) -> {
                     if (c1.type() == CHOW && c2.type() == CHOW) {
                         final Tile t1 = c1.start(), t2 = c2.start();
@@ -162,7 +162,7 @@ public class MCRSetFanCalc {
     }
 
     private void checkTwoTerminalChows() {
-        checkAddOneSetWithUsedSet(
+        checkAddOneSetWithUsedSetOrTwoSets(
                 (c1, c2) -> {
                     if (c1.type() == CHOW && c2.type() == CHOW) {
                         final Tile t1 = c1.start(), t2 = c2.start();
@@ -177,7 +177,9 @@ public class MCRSetFanCalc {
     }
 
     private void checkPungOfTerminalsOrHonors() {
-        checkSingleSetFan(claim -> claim.start().isOrphan(), PUNG_OF_TERMINALS_OR_HONORS);
+        checkSingleSetFan(claim ->
+                claim.type().isPung() && claim.start().isOrphan(),
+                PUNG_OF_TERMINALS_OR_HONORS);
     }
 
     // 2
@@ -196,14 +198,13 @@ public class MCRSetFanCalc {
 
     private void checkDoublePung() {
         checkAddTwoSets(
-                claims -> {
-                    final SuppressedClaim c1 = claims.get(0), c2 = claims.get(1);
+                (c1, c2) -> {
                     if (c1.type().isPung() && c2.type().isPung()) {
                         final Tile t1 = c1.start(), t2 = c2.start();
-                        if (t1.isHonor() || t2.isHonor()) return null;
-                        if (t1.number == t2.number) return claims;
+                        if (t1.isHonor() || t2.isHonor()) return false;
+                        return t1.number == t2.number;
                     }
-                    return null;
+                    return false;
                 },
                 DOUBLE_PUNG
         );
@@ -231,11 +232,8 @@ public class MCRSetFanCalc {
 
     private void checkTwoDragonPungs() {
         checkAddTwoSets(
-                claims -> {
-                    if (claims.stream().allMatch(c -> c.start().isDragon()))
-                        return claims;
-                    return null;
-                },
+                (c1, c2) ->
+                        c1.start().isDragon() && c2.start().isDragon(),
                 TWO_DRAGON_PUNGS
         );
     }
@@ -541,22 +539,27 @@ public class MCRSetFanCalc {
     }
 
     /**
-     * Check whether there is a used set and an unused set that match a 2-set Fan.
+     * Check whether there is a used set and an unused set (or two unused sets) that match a 2-set Fan.
      * If so, add this Fan and consume the unused set until the Fan is not met.
      * You may assume that the input of target must be 2 sets.
      */
+    private void checkAddOneSetWithUsedSetOrTwoSets(BiPredicate<SuppressedClaim, SuppressedClaim> target,
+                                                    MCRFan fan) {
+        checkAdd(
+                claims -> {
+                    List<SuppressedClaim> result = twoSetFuncWrapper(target, claims);
+                    if (result != null) return result;
+                    result = oneSetWithUsedSetFuncWrapper(target, claims);
+                    return result;
+                },
+                fan
+        );
+    }
+
     private void checkAddOneSetWithUsedSet(BiPredicate<SuppressedClaim, SuppressedClaim> target,
                                            MCRFan fan) {
         checkAdd(
-                claims -> {
-                    for (SuppressedClaim unusedClaim : unusedClaims) {
-                        for (SuppressedClaim usedClaim : usedClaims) {
-                            if (target.test(unusedClaim, usedClaim))
-                                return new ArrayList<>(List.of(unusedClaim));
-                        }
-                    }
-                    return null;
-                },
+                claims -> oneSetWithUsedSetFuncWrapper(target, claims),
                 fan
         );
     }
@@ -566,22 +569,35 @@ public class MCRSetFanCalc {
      * If so, add this Fan and consume involved sets until the Fan is not met.
      * You may assume that the input of target must be 2 sets.
      */
-    private void checkAddTwoSets(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
+    private void checkAddTwoSets(BiPredicate<SuppressedClaim, SuppressedClaim> target,
                                  MCRFan fan) {
         checkAdd(
-                claims -> {
-                    if (claims.size() <= 1) return null;
-                    for (int i = 0, bound = claims.size() - 1; i < bound; i++) {
-                        for (int j = i + 1, bound1 = claims.size(); j < bound1; j++) {
-                            final List<SuppressedClaim> twoSets = new ArrayList<>(List.of(claims.get(i), claims.get(j)));
-                            final List<SuppressedClaim> ret = target.apply(twoSets);
-                            if (ret != null) return ret;
-                        }
-                    }
-                    return null;
-                },
+                claims -> twoSetFuncWrapper(target, claims),
                 fan
         );
+    }
+
+    private List<SuppressedClaim> oneSetWithUsedSetFuncWrapper(BiPredicate<SuppressedClaim, SuppressedClaim> target,
+                                                               List<SuppressedClaim> claims) {
+        for (SuppressedClaim unusedClaim : claims) {
+            for (SuppressedClaim usedClaim : usedClaims) {
+                if (target.test(unusedClaim, usedClaim))
+                    return new ArrayList<>(List.of(unusedClaim));
+            }
+        }
+        return null;
+    }
+
+    private List<SuppressedClaim> twoSetFuncWrapper(BiPredicate<SuppressedClaim, SuppressedClaim> target,
+                                                    List<SuppressedClaim> claims) {
+        if (claims.size() <= 1) return null;
+        for (int i = 0, bound = claims.size() - 1; i < bound; i++) {
+            for (int j = i + 1, bound1 = claims.size(); j < bound1; j++) {
+                if (target.test(claims.get(i), claims.get(j)))
+                    return new ArrayList<>(List.of(claims.get(i), claims.get(j)));
+            }
+        }
+        return null;
     }
 
     /**

@@ -1,7 +1,7 @@
 package net.hidme.mahjong.core.data;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * The calculation result for MCR (Mahjong Chinese Rule).
@@ -10,7 +10,7 @@ import java.util.Map;
 public class MCRResult implements Result {
 
     public MCRResult() {
-        fans = new HashMap<>();
+        fans = new TreeMap<>();
     }
 
     /**

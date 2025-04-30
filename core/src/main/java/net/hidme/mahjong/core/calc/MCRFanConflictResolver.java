@@ -15,8 +15,11 @@ public abstract class MCRFanConflictResolver {
     static void resolveConflict(MCRResult result) {
         for (MCRFan fan : MCRFan.values()) {
             if (result.containsFan(fan)) {
-                for (MCRFan toRemove : CONFLICT_MAP.get(fan)) {
-                    result.removeFan(toRemove);
+                final Collection<MCRFan> conflicts = CONFLICT_MAP.get(fan);
+                if (conflicts != null) {
+                    for (MCRFan toRemove : conflicts) {
+                        result.removeFan(toRemove);
+                    }
                 }
                 // special
                 if (fan == NINE_GATES)

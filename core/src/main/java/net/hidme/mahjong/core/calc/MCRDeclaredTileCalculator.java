@@ -31,7 +31,9 @@ public class MCRDeclaredTileCalculator {
                 final MCRStructureAnalyzer analyzer = new MCRStructureAnalyzer();
                 if (!analyzer.getPossibleStructures(mcrHand).isEmpty())
                     declaredTiles.add(tile);
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+                ignored.printStackTrace();
+            }
         }
         return declaredTiles;
     }

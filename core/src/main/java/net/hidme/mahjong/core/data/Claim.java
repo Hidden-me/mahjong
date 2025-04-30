@@ -1,9 +1,6 @@
 package net.hidme.mahjong.core.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
 
@@ -69,6 +66,10 @@ public record Claim(Type type,  // chow/pung/kong
             case KONG -> new Tile[]{start, start, start, start};
             case KNITTED_CHOW -> new Tile[]{start, start.shift(3), start.shift(6)};
         };
+    }
+
+    public Set<Tile> getTileSet() {
+        return new LinkedHashSet<>(Arrays.asList(getTiles()));
     }
 
 }
