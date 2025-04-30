@@ -22,11 +22,15 @@ public abstract class Hand {
     public final Tile declaredTile;
 
     public Hand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile) {
+        this(flowers, claims, tiles, declaredTile, false);
+    }
+
+    public Hand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile, boolean allowsInvalidTileSet) {
         this.flowers = flowers;
         this.claims = claims;
         this.tiles = tiles;
         this.declaredTile = declaredTile;
-        if (!isValid())
+        if (!allowsInvalidTileSet && !isValid())
             throw new IllegalArgumentException("invalid hand");
     }
 

@@ -7,6 +7,7 @@ import net.hidme.mahjong.core.data.*;
 import net.hidme.mahjong.core.util.NumberUtils;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -78,6 +79,11 @@ public class MCRSetFanCalc {
         checkTwoDragonPungs();
         // 2
         checkDoublePung();
+        // 1
+        checkPureDoubleChow();
+        checkMixedDoubleChow();
+        checkShortStraight();
+        checkTwoTerminalChows();
         // mark all claims as used
         usedClaims.addAll(unusedClaims);
         unusedClaims.clear();
@@ -119,6 +125,61 @@ public class MCRSetFanCalc {
 
     // 1
 
+    private void checkPureDoubleChow() {
+        checkAddOneSetWithUsedSet(
+                (c1, c2) -> {
+                    if (c1.type() == CHOW && c2.type() == CHOW) {
+                        final Tile t1 = c1.start(), t2 = c2.start();
+                        return t1.suit == t2.suit && t1.number == t2.number;
+                    }
+                    return false;
+                },
+                PURE_DOUBLE_CHOW
+        );
+    }
+
+    private void checkMixedDoubleChow() {
+        checkAddOneSetWithUsedSet(
+                (c1, c2) -> {
+                    if (c1.type() == CHOW && c2.type() == CHOW) {
+                        final Tile t1 = c1.start(), t2 = c2.start();
+                        return t1.suit != t2.suit && t1.number == t2.number;
+                    }
+                    return false;
+                },
+                MIXED_DOUBLE_CHOW
+        );
+    }
+
+    private void checkShortStraight() {
+        checkAddOneSetWithUsedSet(
+                (c1, c2) -> {
+                    if (c1.type() == CHOW && c2.type() == CHOW) {
+                        final Tile t1 = c1.start(), t2 = c2.start();
+                        if (t1.suit != t2.suit) return false;
+                        return Math.abs(t1.number - t2.number) == 3;
+                    }
+                    return false;
+                },
+                SHORT_STRAIGHT
+        );
+    }
+
+    private void checkTwoTerminalChows() {
+        checkAddOneSetWithUsedSet(
+                (c1, c2) -> {
+                    if (c1.type() == CHOW && c2.type() == CHOW) {
+                        final Tile t1 = c1.start(), t2 = c2.start();
+                        if (t1.suit != t2.suit) return false;
+                        return t1.number == 1 && t2.number == 7
+                                || t1.number == 7 && t2.number == 1;
+                    }
+                    return false;
+                },
+                TWO_TERMINAL_CHOWS
+        );
+    }
+
     private void checkPungOfTerminalsOrHonors() {
         checkSingleSetFan(claim -> claim.start().isOrphan(), PUNG_OF_TERMINALS_OR_HONORS);
     }
@@ -148,7 +209,7 @@ public class MCRSetFanCalc {
                     }
                     return null;
                 },
-                TWO_DRAGON_PUNGS
+                DOUBLE_PUNG
         );
     }
 
@@ -480,12 +541,33 @@ public class MCRSetFanCalc {
     }
 
     /**
+     * Check whether there is a used set and an unused set that match a 2-set Fan.
+     * If so, add this Fan and consume the unused set until the Fan is not met.
+     * You may assume that the input of target must be 2 sets.
+     */
+    private void checkAddOneSetWithUsedSet(BiPredicate<SuppressedClaim, SuppressedClaim> target,
+                                           MCRFan fan) {
+        checkAdd(
+                claims -> {
+                    for (SuppressedClaim unusedClaim : unusedClaims) {
+                        for (SuppressedClaim usedClaim : usedClaims) {
+                            if (target.test(unusedClaim, usedClaim))
+                                return new ArrayList<>(List.of(unusedClaim));
+                        }
+                    }
+                    return null;
+                },
+                fan
+        );
+    }
+
+    /**
      * Check whether the required sets of a 2-set Fan exist.
      * If so, add this Fan and consume involved sets until the Fan is not met.
      * You may assume that the input of target must be 2 sets.
      */
     private void checkAddTwoSets(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
-                                   MCRFan fan) {
+                                 MCRFan fan) {
         checkAdd(
                 claims -> {
                     if (claims.size() <= 1) return null;
@@ -498,7 +580,8 @@ public class MCRSetFanCalc {
                     }
                     return null;
                 },
-                fan);
+                fan
+        );
     }
 
     /**
@@ -507,7 +590,7 @@ public class MCRSetFanCalc {
      * You may assume that the input of target must be 3 sets.
      */
     private void checkAddThreeSets(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
-                                    MCRFan fan) {
+                                   MCRFan fan) {
         checkAdd(
                 claims -> {
                     if (claims.size() == 4) {
@@ -521,7 +604,8 @@ public class MCRSetFanCalc {
                     }
                     return null;
                 },
-                fan);
+                fan
+        );
     }
 
     private void checkAdd(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,

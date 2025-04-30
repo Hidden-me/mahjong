@@ -83,11 +83,64 @@ public class MCRTotalFanCalc {
         checkTwoConcealedPungs();
         checkConcealedKong();
         checkAllSimples();
+        // 1
+        checkMeldedKong();
+        checkOneVoidedSuit();
+        checkNoHonors();
+        checkUniqueWait();
+        checkSelfDrawn();
     }
 
     private final MCRHand hand;
     private final HandStructure structure;
     private final MCRResult result;
+
+    // 1
+
+    private void checkMeldedKong() {
+        checkOneKong(0);
+    }
+
+    private void checkOneVoidedSuit() {
+        final Set<Character> suits = getSuitSet(hand.getHandTilesWithClaims());
+        suits.removeAll(List.of('w', 'd'));
+        if (suits.size() == 2)
+            result.addFan(ONE_VOIDED_SUIT);
+    }
+
+    private void checkNoHonors() {
+        if (hand.getHandTilesWithClaims().stream().noneMatch(Tile::isHonor))
+            result.addFan(NO_HONORS);
+    }
+
+    private void checkUniqueWait() {
+        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        final MCRDeclaredTileCalculator declaredTileCalculator = new MCRDeclaredTileCalculator(hand.claims, hand.tiles);
+        final Set<Tile> declaredTiles = declaredTileCalculator.calculate(true);
+        assert declaredTiles.contains(hand.declaredTile);
+        if (declaredTiles.size() != 1) return;
+        final Tile declaredTile = hand.declaredTile;
+        // classify unique wait
+        for (Claim claim : normalStruct.claims) {
+            if (claim.type() != CHOW) continue;
+            if (!Set.of(claim.getTiles()).contains(declaredTile)) continue;
+            final int pos = declaredTile.number - claim.start().number;
+            if (pos == 0 || pos == 2) {
+                result.addFan(EDGE_WAIT);
+            } else {
+                assert pos == 1;
+                result.addFan(CLOSED_WAIT);
+            }
+            return;
+        }
+        assert declaredTile == normalStruct.pair;
+        result.addFan(SINGLE_WAIT);
+    }
+
+    private void checkSelfDrawn() {
+        if (hand.selfDrawn)
+            result.addFan(SELF_DRAWN);
+    }
 
     // 2
 

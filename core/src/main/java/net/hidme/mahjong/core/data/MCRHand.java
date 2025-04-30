@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class MCRHand extends Hand {
 
-    public MCRHand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile) {
-        this(flowers, claims, tiles, declaredTile,
+    public MCRHand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile, boolean allowsInvalidTileSet) {
+        this(flowers, claims, tiles, declaredTile, allowsInvalidTileSet,
                 false, false, false, false,
                 Wind.EAST, Wind.EAST);
     }
@@ -21,7 +21,15 @@ public class MCRHand extends Hand {
                    boolean selfDrawn, boolean lastTile,
                    boolean lastDrawOrClaim, boolean kong,
                    Wind prevalentWind, Wind seatWind) {
-        super(flowers, claims, tiles, declaredTile);
+        this(flowers, claims, tiles, declaredTile, false,
+                selfDrawn, lastTile, lastDrawOrClaim, kong, prevalentWind, seatWind);
+    }
+
+    public MCRHand(Tile[] flowers, Claim[] claims, Tile[] tiles, Tile declaredTile, boolean allowsInvalidTileSet,
+                   boolean selfDrawn, boolean lastTile,
+                   boolean lastDrawOrClaim, boolean kong,
+                   Wind prevalentWind, Wind seatWind) {
+        super(flowers, claims, tiles, declaredTile, allowsInvalidTileSet);
         if (!isValid())
             throw new IllegalArgumentException("invalid MCR hand");
         this.selfDrawn = selfDrawn;
