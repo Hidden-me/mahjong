@@ -5,9 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
 

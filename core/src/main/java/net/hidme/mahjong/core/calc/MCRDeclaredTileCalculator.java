@@ -5,7 +5,6 @@ import net.hidme.mahjong.core.data.MCRHand;
 import net.hidme.mahjong.core.data.Tile;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 public class MCRDeclaredTileCalculator {

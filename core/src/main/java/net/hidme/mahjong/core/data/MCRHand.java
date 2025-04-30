@@ -1,11 +1,5 @@
 package net.hidme.mahjong.core.data;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.SortedMultiset;
-
-import java.util.List;
-
 /**
  * A hand of tiles along with the ambient situation in MCR.
  */

@@ -1,8 +1,5 @@
 package net.hidme.mahjong.core.calc;
 
-import com.google.common.collect.Multiset;
-import com.google.common.collect.SortedMultiset;
-import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
 import net.hidme.mahjong.core.util.NumberUtils;
 
@@ -15,7 +12,6 @@ import java.util.stream.Stream;
 
 import static net.hidme.mahjong.core.data.Claim.Type.CHOW;
 import static net.hidme.mahjong.core.data.Claim.Type.KNITTED_CHOW;
-import static net.hidme.mahjong.core.data.Claim.getSuits;
 import static net.hidme.mahjong.core.data.MCRFan.*;
 import static net.hidme.mahjong.core.data.Tile.wind;
 import static net.hidme.mahjong.core.util.CollectionUtils.minus;
@@ -317,6 +313,10 @@ public class MCRSetFanCalc {
                 },
                 KNITTED_STRAIGHT
         );
+        if (structure instanceof HonorKnittedHandStructure knittedStruct) {
+            if (knittedStruct.knittedTiles.length == 9)
+                result.addFan(KNITTED_STRAIGHT);
+        }
     }
 
     private void checkBigThreeWinds() {

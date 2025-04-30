@@ -3,9 +3,6 @@ package net.hidme.mahjong.core.data;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.hidme.mahjong.core.data.MCRFan.*;
-import static net.hidme.mahjong.core.data.MCRFan.CONCEALED_HAND;
-
 /**
  * The calculation result for MCR (Mahjong Chinese Rule).
  * It contains the Fan combination and the total Fan score.
