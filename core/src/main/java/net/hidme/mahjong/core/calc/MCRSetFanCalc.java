@@ -442,7 +442,7 @@ public class MCRSetFanCalc {
         checkAdd(
                 claims -> {
                     if (claims.size() != 4) return null;
-                    if (claims.stream().anyMatch(c -> c.type().isPung()))
+                    if (claims.stream().anyMatch(c -> !c.type().isPung()))
                         return null;
                     if (!isOfPureNumberSuit(claims)) return null;
                     final List<Integer> numberSeq = claims.stream().map(c -> c.start().number).toList();
@@ -654,17 +654,16 @@ public class MCRSetFanCalc {
     // consume a subset of unused claims and apply suppress
     private boolean consumeUnusedClaims(Function<List<SuppressedClaim>, List<SuppressedClaim>> target,
                                         Function<SuppressedClaim, Set<MCRFan>> suppressor) {
-        final List<SuppressedClaim> toConsume = target.apply(unusedClaims);
-        if (toConsume != null) {
-            unusedClaims.removeAll(toConsume);
-            for (SuppressedClaim claim : toConsume) {
-                final Set<MCRFan> suppress = suppressor.apply(claim);
-                claim.suppress.addAll(suppress);
-                usedClaims.add(claim);
-            }
-            return true;
+        final List<SuppressedClaim> result = target.apply(unusedClaims);
+        if (result == null) return false;
+        final List<SuppressedClaim> toConsume = new ArrayList<>(result);
+        unusedClaims.removeAll(toConsume);
+        for (SuppressedClaim claim : toConsume) {
+            final Set<MCRFan> suppress = suppressor.apply(claim);
+            claim.suppress.addAll(suppress);
+            usedClaims.add(claim);
         }
-        return false;
+        return true;
     }
 
 }

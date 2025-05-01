@@ -30,6 +30,7 @@ public class MCRCalculatorTest {
             testPureTerminalChows();
             // 48
             testQuadrupleChow();
+            testFourPureShiftedPungs();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
