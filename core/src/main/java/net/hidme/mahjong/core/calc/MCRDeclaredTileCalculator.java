@@ -27,7 +27,7 @@ public class MCRDeclaredTileCalculator {
         final Set<Tile> declaredTiles = new LinkedHashSet<>();
         for (Tile tile : Tile.values()) {
             try {
-                final MCRHand mcrHand = new MCRHand(new Tile[0], claims, tiles, tile, allowsInvalidTileSet);
+                final MCRHand mcrHand = new MCRHand(new Tile[0], claims, tiles, tile, allowsInvalidTileSet, true);
                 final MCRStructureAnalyzer analyzer = new MCRStructureAnalyzer();
                 if (!analyzer.getPossibleStructures(mcrHand).isEmpty())
                     declaredTiles.add(tile);

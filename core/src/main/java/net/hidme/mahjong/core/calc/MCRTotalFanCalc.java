@@ -490,7 +490,7 @@ public class MCRTotalFanCalc {
     }
 
     private void checkNumberHand(Predicate<Integer> numberRequirement, MCRFan fan) {
-        if (!hand.isOfPureNumberSuit()) return;
+        if (!hand.isOfNumberSuits()) return;
         if (hand.getHandTilesWithClaims().stream().allMatch(t -> numberRequirement.test(t.number))) {
             result.addFan(fan);
         }

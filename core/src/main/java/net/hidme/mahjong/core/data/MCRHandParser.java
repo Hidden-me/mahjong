@@ -76,7 +76,6 @@ public class MCRHandParser {
         } catch (ParseException e) {
             throw e;
         } catch (Throwable e) {
-            e.printStackTrace();
             throw new ParseException(e.getMessage(), -1);
         }
     }

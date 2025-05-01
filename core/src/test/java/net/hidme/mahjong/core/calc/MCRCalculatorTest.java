@@ -21,6 +21,15 @@ public class MCRCalculatorTest {
             testFourKongs();
             testSevenShiftedPairs();
             testThirteenOrphans();
+            // 64
+            testAllTerminals();
+            testLittleFourWinds();
+            testLittleThreeDragons();
+            testAllHonors();
+            testFourConcealedPungs();
+            testPureTerminalChows();
+            // 48
+            testQuadrupleChow();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -63,6 +72,8 @@ public class MCRCalculatorTest {
     @Test
     public void testFourKongs() throws ParseException {
         testSingleCase(";2222s1,3333s1,6666p1,4444m0;EE;E,E,0,0,0,0", 88);
+        testSingleCase(";2222s0,3333s0,6666p0,4444m0;EE;E,E,0,0,0,0", 152);
+        testSingleCase(";2222s0,3333s0,6666p0,4444m1;EE;E,E,0,0,0,0", 104);
     }
 
     @Test
@@ -77,6 +88,56 @@ public class MCRCalculatorTest {
         testSingleCase(";;19m19p19sESWNPFC1s;E,E,0,0,0,0", 88);
         testSingleCase(";;19m19p11sESWNPFC9s;E,E,0,0,0,0", 88);
         testSingleCase(";;19m119p19sESWNPFC;E,E,1,0,0,0", 89);
+    }
+
+    @Test
+    public void testAllTerminals() throws ParseException {
+        testSingleCase(";111m1;1199s111999p1s;E,E,1,0,0,0", 97);
+        testSingleCase(";1111m2,111p3;1199s999p9s;E,E,1,0,0,0", 68);
+        testSingleCase(";;1199m199s119999p1s;E,E,0,0,0,0", 90);
+    }
+
+    @Test
+    public void testLittleFourWinds() throws ParseException {
+        testSingleCase(";EEE2,SSS1;23pWWWNN1p;S,N,1,0,0,0", 77);
+        testSingleCase(";NNN1,EEE3;11sSSSWW1s;W,S,0,0,0,0", 104);
+        testSingleCase(";NNN3,WWW2;EESSSFFF;E,E,0,0,0,0", 130);
+    }
+
+    @Test
+    public void testLittleThreeDragons() throws ParseException {
+        testSingleCase(";PPP1,999s3;345mCFFFC;S,N,0,0,0,0", 67);
+        testSingleCase(";CCC1,PPP3,111p2;999pFF;S,N,1,0,0,0", 104);
+        testSingleCase(";EEE3,CCC2;NNFFFPPN;S,W,0,0,0,0", 128);
+    }
+
+    @Test
+    public void testAllHonors() throws ParseException {
+        testSingleCase(";EEE1,SSS3,FFF2;WWNNW;W,W,1,0,0,0", 135);
+        testSingleCase(";;EESSWWNNPPFFCC;W,W,1,0,0,0", 89);
+    }
+
+    @Test
+    public void testFourConcealedPungs() throws ParseException {
+        testSingleCase(";;111444888m888s55p;W,W,0,0,0,0", 69);
+        testSingleCase(";;999s11557779991p;W,W,1,0,0,0", 72);
+    }
+
+    @Test
+    public void testPureTerminalChows() throws ParseException {
+        testSingleCase(";123p2;12355778998p;W,W,1,0,0,0", 66);
+        testSingleCase(";;11223355778899s;W,W,1,0,0,0", 68);
+    }
+
+    @Test
+    public void testQuadrupleChow() throws ParseException {
+        testSingleCase(";456s1,456s2,456s2;55m456s;W,W,1,1,0,0", 96);
+        testSingleCase(";234s0;22333444sFF2s;W,W,1,0,0,0", 137);
+    }
+
+    @Test
+    public void testFourPureShiftedPungs() throws ParseException {
+        testSingleCase(";111s1,222s1,444s3;333s22p;W,W,0,0,0,0", 63);
     }
 
     @Test

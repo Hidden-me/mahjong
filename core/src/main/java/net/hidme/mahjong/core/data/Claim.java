@@ -1,5 +1,8 @@
 package net.hidme.mahjong.core.data;
 
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
+
 import java.util.*;
 
 import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
@@ -48,15 +51,25 @@ public record Claim(Type type,  // chow/pung/kong
     }
 
     public static char[] getSuits(Collection<Claim> claims) {
-        return Tile.getSuits(getTiles(claims));
+        return Tile.getSuits(getTileList(claims));
     }
 
-    public static List<Tile> getTiles(Collection<Claim> claims) {
+    public static List<Tile> getTileList(Collection<Claim> claims) {
         final List<Tile> tiles = new ArrayList<>();
+        collectTiles(claims, tiles);
+        return tiles;
+    }
+
+    public static SortedMultiset<Tile> getTiles(Collection<Claim> claims) {
+        final SortedMultiset<Tile> tiles = TreeMultiset.create();
+        collectTiles(claims, tiles);
+        return tiles;
+    }
+
+    private static void collectTiles(Collection<Claim> claims, Collection<Tile> tiles) {
         for (Claim claim : claims) {
             tiles.addAll(List.of(claim.getTiles()));
         }
-        return tiles;
     }
 
     public Tile[] getTiles() {
