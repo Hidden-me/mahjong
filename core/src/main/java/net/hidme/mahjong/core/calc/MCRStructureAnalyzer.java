@@ -283,10 +283,13 @@ public class MCRStructureAnalyzer {
         if (tiles.entrySet().size() != 14) return;
         final List<Tile> honors = new ArrayList<>(), knittedTiles = new ArrayList<>();
         // 369<->suit1, 147<->suit2, 258<->suit3
-        BiMap<Integer, Character> knittedSuits = HashBiMap.create();
+        final BiMap<Integer, Character> knittedSuits = HashBiMap.create();
         for (Tile tile : tiles.elementSet()) {
+            // add honor tile
             if (tile.isHonor()) honors.add(tile);
+            // add knitted tile
             else if (tile.isNumber()) {
+                knittedTiles.add(tile);
                 final char suit = tile.suit;
                 final int start = tile.number % 3;
                 final Character assignedSuit = knittedSuits.get(start);

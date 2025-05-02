@@ -339,9 +339,9 @@ public class MCRTotalFanCalc {
     private void checkAllEvenPungs() {
         if (!(structure instanceof NormalHandStructure normalStruct)) return;
         for (Claim claim : normalStruct.claims) {
-            if (!claim.type().isPung() || claim.start().number % 2 != 0) return;
+            if (!claim.type().isPung()) return;
         }
-        result.addFan(ALL_EVEN_PUNGS);
+        checkNumberHand(i -> i % 2 == 0, ALL_EVEN_PUNGS);
     }
 
     private void checkFullFlush() {

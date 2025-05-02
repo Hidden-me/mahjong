@@ -35,6 +35,10 @@ public class MCRCalculatorTest {
             testFourPureShiftedChows();
             testThreeKongs();
             testPureTerminalsAndHonors();
+            // 24
+            testSevenPairs();
+            testGreaterHonorsAndKnittedTiles();
+            testAllEvenPungs();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -168,23 +172,36 @@ public class MCRCalculatorTest {
     }
 
     @Test
-    public void testPairHand() throws ParseException {
-        // seven shifted pairs only
-        // seven pairs only
+    public void testSevenPairs() throws ParseException {
         testSingleCase(";;EE22334455s66p77m;E,E,0,0,0,0", 24);
-        // mixed
-//        testSingleCase(";;223344667788sEE;E,E,1,0,0,0", 31);
-//        testSingleCase(";;223344667788s11p;E,E,1,0,0,0", 27);
-//        testSingleCase(";;2233m44667788sEE;E,E,1,0,0,0", 26);
-//        testSingleCase(";;EEEE334455s66p77m;E,E,1,0,0,0", 26);
+        testSingleCase(";;223344667788sEE;E,E,1,0,0,0", 31);
+        testSingleCase(";;223344667788s11p;E,E,1,0,0,0", 27);
+        testSingleCase(";;2233m44667788sEE;E,E,1,0,0,0", 26);
+        testSingleCase(";;EEEE334455s66p77m;E,E,0,0,0,0", 26);
+    }
+
+    @Test
+    public void testGreaterHonorsAndKnittedTiles() throws ParseException {
+        testSingleCase(";;25m36p47sESWNPFC1s;E,E,0,0,0,0", 24);
+        testSingleCase(";;258m9p47sESWNPFC1s;E,E,0,0,0,0", 24);
+        testSingleCase(";;258m147sESWNPFC9p;E,E,0,0,0,0", 24);
+        testSingleCase("48f;;25m36p47sESWNPFC1s;E,E,0,0,0,0", 26);
+        testSingleCase(";;14m369p25sESWNFPC;E,E,1,0,0,0", 25);
+    }
+
+    @Test
+    public void testAllEvenPungs() throws ParseException {
+        testSingleCase(";444m1,666m3;22244s88p4s;E,E,0,0,0,0", 26);
+        testSingleCase(";444m1,666m3;22244s88p4s;E,E,1,0,0,0", 29);
+        testSingleCase(";444m1,666m3;222444s88p;E,E,1,0,0,0", 30);
+        testSingleCase(";444m1,666m3;222444s77p;E,E,0,0,0,0", 13);
+        testSingleCase(";;22224444s666688p;E,E,0,0,0,0", 33);
     }
 
     @Test
     public void testHonorsKnittedHand() throws ParseException {
+        testSingleCase(";;147m369p25sESWFP8s;E,E,1,0,0,0", 25);
         // greater honors and knitted tiles only
-        testSingleCase(";;25m36p47sESWNPFC1s;E,E,0,0,0,0", 24);
-        testSingleCase(";;258m9p47sESWNPFC1s;E,E,0,0,0,0", 24);
-        testSingleCase(";;258m147sESWNPFC9p;E,E,0,0,0,0", 24);
         // lesser honors and knitted tiles only
         testSingleCase(";;258m36p47sESWNPF1s;E,E,0,0,0,0", 12);
         testSingleCase(";;258m36p47sESWPFC1s;E,E,0,0,0,0", 12);
@@ -192,7 +209,6 @@ public class MCRCalculatorTest {
         testSingleCase(";;25m36p47sESWNPFC1m;E,E,0,0,0,0", 0);
         testSingleCase("1f;;25m36p47mESWNPFC1m;E,E,0,0,0,0", 0);
         // mixed
-        testSingleCase("48f;;25m36p47sESWNPFC1s;E,E,0,0,0,0", 26);
     }
 
     private void testSingleCase(String cas, int expected) throws ParseException {
