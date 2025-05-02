@@ -145,7 +145,7 @@ public class MCRTotalFanCalc {
     // 2
 
     private void checkConcealedHand() {
-        if (hand.claims.length == 0)
+        if (hand.isConcealed())
             result.addFan(CONCEALED_HAND);
     }
 
@@ -190,7 +190,7 @@ public class MCRTotalFanCalc {
     }
 
     private void checkFullyConcealedHand() {
-        if (hand.claims.length == 0 && hand.selfDrawn)
+        if (hand.isConcealed() && hand.selfDrawn)
             result.addFan(FULLY_CONCEALED_HAND);
     }
 

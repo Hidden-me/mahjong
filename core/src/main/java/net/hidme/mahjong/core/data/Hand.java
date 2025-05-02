@@ -94,6 +94,13 @@ public abstract class Hand {
         return true;
     }
 
+    public boolean isConcealed() {
+        for (Claim claim : claims) {
+            if (claim.claimedFrom() != 0) return false;
+        }
+        return true;
+    }
+
     // each tile is finite
     private boolean isValid() {
         final SortedMultiset<Tile> normalTiles = getHandTilesWithClaims();
