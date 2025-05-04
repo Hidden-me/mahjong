@@ -55,6 +55,8 @@ public class MCRHand extends Hand {
         // last tile
         if (Claim.getTiles(List.of(claims)).count(declaredTile) == 3 && !lastTile)
             return "lastTile must occur if the declared tile is used thrice";
+        if (getConcealedTiles().count(declaredTile) > 0 && lastTile)
+            return "lastTile must not occur if the declared tile is present in concealed tiles";
         return null;
     }
 

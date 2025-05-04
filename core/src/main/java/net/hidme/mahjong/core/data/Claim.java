@@ -44,29 +44,29 @@ public record Claim(Type type,  // chow/pung/kong
         throw new IllegalArgumentException(tiles.size() + " tile(s) must not be a claim");
     }
 
-    public static boolean isOfPureNumberSuit(Collection<Claim> claims) {
+    public static boolean isOfPureNumberSuit(Iterable<Claim> claims) {
         char[] suits = getSuits(claims);
         if (suits.length != 1) return false;
         return isNumberSuit(suits[0]);
     }
 
-    public static char[] getSuits(Collection<Claim> claims) {
+    public static char[] getSuits(Iterable<Claim> claims) {
         return Tile.getSuits(getTileList(claims));
     }
 
-    public static List<Tile> getTileList(Collection<Claim> claims) {
+    public static List<Tile> getTileList(Iterable<Claim> claims) {
         final List<Tile> tiles = new ArrayList<>();
         collectTiles(claims, tiles);
         return tiles;
     }
 
-    public static SortedMultiset<Tile> getTiles(Collection<Claim> claims) {
+    public static SortedMultiset<Tile> getTiles(Iterable<Claim> claims) {
         final SortedMultiset<Tile> tiles = TreeMultiset.create();
         collectTiles(claims, tiles);
         return tiles;
     }
 
-    private static void collectTiles(Collection<Claim> claims, Collection<Tile> tiles) {
+    private static void collectTiles(Iterable<Claim> claims, Collection<Tile> tiles) {
         for (Claim claim : claims) {
             tiles.addAll(List.of(claim.getTiles()));
         }

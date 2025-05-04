@@ -68,6 +68,18 @@ public abstract class Hand {
         return Tile.getTilesOfSuit(getHandTiles(), suit);
     }
 
+    /**
+     * Get concealed tiles (excluding the declared tile).
+     */
+    public SortedMultiset<Tile> getConcealedTiles() {
+        final SortedMultiset<Tile> tiles = TreeMultiset.create(List.of(this.tiles));
+        for (Claim claim : claims) {
+            if (claim.claimedFrom() == 0)
+                tiles.addAll(List.of(claim.getTiles()));
+        }
+        return tiles;
+    }
+
     public boolean hasClaim() {
         return claims.length != 0;
     }
