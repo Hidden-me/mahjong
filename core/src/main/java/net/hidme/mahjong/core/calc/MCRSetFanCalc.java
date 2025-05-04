@@ -197,7 +197,7 @@ public class MCRSetFanCalc {
     }
 
     private void checkDoublePung() {
-        checkAddTwoSets(
+        checkAddOneSetWithUsedSetOrTwoSets(
                 (c1, c2) -> {
                     if (c1.type().isPung() && c2.type().isPung()) {
                         final Tile t1 = c1.start(), t2 = c2.start();
