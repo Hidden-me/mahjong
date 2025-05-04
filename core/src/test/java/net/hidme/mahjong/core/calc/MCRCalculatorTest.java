@@ -48,6 +48,10 @@ public class MCRCalculatorTest {
             // 16
             testPureStraight();
             testThreeSuitedTerminalChows();
+            testPureShiftedChows();
+            testAllFive();
+            testTriplePung();
+            testThreeConcealedPungs();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -257,6 +261,32 @@ public class MCRCalculatorTest {
     public void testThreeSuitedTerminalChows() throws ParseException {
         testSingleCase(";123m0,789m1,123p2;55s897p;E,E,1,0,0,0", 18);
         testSingleCase(";123m0,789m1,123p2,789p0;55s;E,E,0,0,0,0", 22);
+    }
+
+    @Test
+    public void testPureShiftedChows() throws ParseException {
+        testSingleCase(";123m0,345m0;567m34sCC5s;E,E,0,0,0,0", 18);
+        testSingleCase(";234p0;12334567pEE5p;E,E,1,0,0,0", 24);
+    }
+
+    @Test
+    public void testAllFive() throws ParseException {
+        testSingleCase(";345m2;567m34s45556p5s;E,E,0,0,0,0", 25);
+        testSingleCase(";345m2;567m3455s456m5s;E,E,0,0,0,0", 36);
+        testSingleCase(";345m2;455667m3455s5s;E,E,0,0,0,0", 36);
+    }
+
+    @Test
+    public void testTriplePung() throws ParseException {
+        testSingleCase(";1111p1,1111m0;11134445s;E,E,1,0,0,0", 28);
+        testSingleCase(";1111p0,1111m0,1111s0;999s99p;E,E,1,0,0,0", 178);
+    }
+
+    @Test
+    public void testThreeConcealedPungs() throws ParseException {
+        testSingleCase(";;44m77s444567pFFF7s;E,E,1,0,0,0", 22);
+        testSingleCase(";;1156667m222s888p6m;E,E,0,0,0,0", 21);
+        testSingleCase(";;444666888s33777p;E,E,0,0,0,0", 27);
     }
 
     @Test
