@@ -658,8 +658,8 @@ public class MCRSetFanCalc {
         final List<SuppressedClaim> result = target.apply(unusedClaims);
         if (result == null) return false;
         final List<SuppressedClaim> toConsume = new ArrayList<>(result);
-        unusedClaims.removeAll(toConsume);
         for (SuppressedClaim claim : toConsume) {
+            unusedClaims.remove(claim);
             final Set<MCRFan> suppress = suppressor.apply(claim);
             claim.suppress.addAll(suppress);
             usedClaims.add(claim);

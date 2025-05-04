@@ -45,6 +45,8 @@ public class MCRCalculatorTest {
             testUpperTiles();
             testMiddleTiles();
             testLowerTiles();
+            // 16
+            ;
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -242,6 +244,12 @@ public class MCRCalculatorTest {
     public void testLowerTiles() throws ParseException {
         testSingleCase(";111p1,111s2,222s1;11m33s1m;E,E,1,0,0,0", 50);
         testSingleCase(";;112m33s11223333p2m;E,E,0,0,0,0", 50);
+    }
+
+    @Test
+    public void testPureStraight() throws ParseException {
+        testSingleCase(";;12345566789s22p4s;E,E,1,0,0,0", 24);
+        testSingleCase(";123m1,789m0;888s46m88p5m;E,E,0,0,0,0", 18);
     }
 
     @Test
