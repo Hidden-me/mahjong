@@ -51,6 +51,10 @@ public class NormalHandStructure implements HandStructure {
         return Stream.of(claims).allMatch(c -> c.type() == CHOW);
     }
 
+    public boolean chowsOrKnittedChowsOnly() {
+        return Stream.of(claims).allMatch(c -> c.type() == CHOW || c.type() == KNITTED_CHOW);
+    }
+
     public boolean pungsOnly() {
         return Stream.of(claims).allMatch(c -> c.type().isPung());
     }

@@ -133,8 +133,10 @@ public class MCRTotalFanCalc {
             }
             return;
         }
-        assert declaredTile == normalStruct.pair;
-        result.addFan(SINGLE_WAIT);
+        if (declaredTile == normalStruct.pair) {
+            result.addFan(SINGLE_WAIT);
+        }
+        // special unique wait (e.g. thirteen orphans / honors and knitted tiles)
     }
 
     private void checkSelfDrawn() {
@@ -151,7 +153,7 @@ public class MCRTotalFanCalc {
 
     private void checkAllChows() {
         if (!(structure instanceof NormalHandStructure normalStruct)) return;
-        if (normalStruct.chowsOnly() && !normalStruct.pair.isHonor())
+        if (normalStruct.chowsOrKnittedChowsOnly() && !normalStruct.pair.isHonor())
             result.addFan(ALL_CHOWS);
     }
 

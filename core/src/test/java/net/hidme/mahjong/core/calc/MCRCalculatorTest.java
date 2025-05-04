@@ -52,6 +52,9 @@ public class MCRCalculatorTest {
             testAllFive();
             testTriplePung();
             testThreeConcealedPungs();
+            // 12
+            testLesserHonorsAndKnittedTiles();
+            testKnittedStraight();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -290,16 +293,20 @@ public class MCRCalculatorTest {
     }
 
     @Test
-    public void testHonorsKnittedHand() throws ParseException {
+    public void testLesserHonorsAndKnittedTiles() throws ParseException {
         testSingleCase(";;147m369p25sESWFP8s;E,E,1,0,0,0", 25);
-        // greater honors and knitted tiles only
-        // lesser honors and knitted tiles only
         testSingleCase(";;258m36p47sESWNPF1s;E,E,0,0,0,0", 12);
         testSingleCase(";;258m36p47sESWPFC1s;E,E,0,0,0,0", 12);
-        // unqualified cases
         testSingleCase(";;25m36p47sESWNPFC1m;E,E,0,0,0,0", 0);
         testSingleCase("1f;;25m36p47mESWNPFC1m;E,E,0,0,0,0", 0);
-        // mixed
+    }
+
+    @Test
+    public void testKnittedStraight() throws ParseException {
+        testSingleCase(";;369m25s147pSWNFP8s;E,E,0,0,0,0", 24);
+        testSingleCase(";234p1;258m1478s369p8s;E,E,0,0,0,0", 15);
+        testSingleCase(";;12355s258m147s369p;E,E,0,0,0,0", 16);
+        testSingleCase(";;123s258m147s36999p;E,E,0,0,0,0", 17);
     }
 
     private void testSingleCase(String cas, int expected) throws ParseException {
