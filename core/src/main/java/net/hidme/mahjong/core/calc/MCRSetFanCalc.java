@@ -68,6 +68,7 @@ public class MCRSetFanCalc {
         checkBigThreeWinds();
         // 8
         checkMixedStraight();
+        checkMixedTripleChow();
         checkMixedShiftedChows();
         checkMixedShiftedPungs();
         // 6
