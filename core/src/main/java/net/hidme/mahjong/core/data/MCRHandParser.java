@@ -144,7 +144,7 @@ public class MCRHandParser {
             }
             return index + 1;
         }
-        throw new ParseException("No tile group found in" + string, fromIndex);
+        throw new ParseException("No tile group found in " + string, fromIndex);
     }
 
     private boolean parseBinary(String string) {

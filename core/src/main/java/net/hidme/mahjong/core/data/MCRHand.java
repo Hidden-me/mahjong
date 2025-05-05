@@ -50,12 +50,15 @@ public class MCRHand extends Hand {
         if (claims.length * 3 + tiles.length != 13)
             return "not 14 effective tiles";
         // out with replacement tile
-        if (claimsOfType(Claim.Type.KONG).isEmpty() && kong && selfDrawn)
+        if (kong && selfDrawn && claimsOfType(Claim.Type.KONG).isEmpty())
             return "out with replacement tile (kong and selfDrawn) must not occur if there is no kong";
+        // robbing the kong
+        if (kong && !selfDrawn && getHandTilesWithClaims().count(declaredTile) > 1)
+            return "robbing the kong (kong and not selfDrawn) must not occur if the declared tile is not unique in the hand";
         // last tile
-        if (Claim.getTiles(List.of(claims)).count(declaredTile) == 3 && !lastTile)
+        if (!lastTile && Claim.getTiles(List.of(claims)).count(declaredTile) == 3)
             return "lastTile must occur if the declared tile is used thrice";
-        if (getConcealedTiles().count(declaredTile) > 0 && lastTile)
+        if (lastTile && getConcealedTiles().count(declaredTile) > 0)
             return "lastTile must not occur if the declared tile is present in concealed tiles";
         return null;
     }
