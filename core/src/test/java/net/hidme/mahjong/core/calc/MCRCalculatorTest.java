@@ -77,6 +77,15 @@ public class MCRCalculatorTest {
             testTwoConcealedKongs();
             testTwoDragonPungs();
             // 4
+            testOutsideHand();
+            testFullyConcealedHand();
+            testTwoMeldedKongs();
+            testLastTile();
+            // 2
+            testDragonPung();
+            testPrevalentWind();
+            testSeatWind();
+            testConcealedHand();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -451,6 +460,54 @@ public class MCRCalculatorTest {
     @Test
     public void testTwoDragonPungs() throws ParseException {
         testSingleCase(";PPP3,FFF1;999s33354p;N,E,1,0,0,0", 9);
+    }
+
+    @Test
+    public void testOutsideHand() throws ParseException {
+        testSingleCase(";123p0,CCC2;999m79998p;N,E,1,0,0,0", 10);
+    }
+
+    @Test
+    public void testFullyConcealedHand() throws ParseException {
+        testSingleCase(";;234678m44556s55p3s;N,E,1,0,0,0", 8);
+        testSingleCase(";;12789m33s234999p3m;E,E,1,0,0,0", 8);
+        testSingleCase(";;234678m22s55pFFF5p;W,S,1,0,0,0", 8);
+    }
+
+    @Test
+    public void testTwoMeldedKongs() throws ParseException {
+        testSingleCase(";PPPP2,2222s1;456s24663p;N,E,0,0,0,0", 8);
+        testSingleCase(";CCC1,4444p3,4444m2;11133m;N,E,0,0,0,0", 16);
+    }
+
+    @Test
+    public void testLastTile() throws ParseException {
+        testSingleCase(";123p0,888m1;67m678sFF8m;N,E,1,1,0,0", 8);
+    }
+
+    @Test
+    public void testDragonPung() throws ParseException {
+        testSingleCase(";PPP2,789m2;34s123pSS5s;N,E,0,0,0,0", 8);
+        testSingleCase(";;3368m345678pFFF7m;N,E,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testPrevalentWind() throws ParseException {
+        testSingleCase(";EEEE0;888m789s45674p;E,S,0,0,0,0", 8);
+        testSingleCase(";;234567m66789sNNN;N,N,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testSeatWind() throws ParseException {
+        testSingleCase(";SSS3;345m11567s456p;N,S,0,0,0,0", 8);
+        testSingleCase(";WWW2,FFF1;78m44678p6m;W,W,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testConcealedHand() throws ParseException {
+        testSingleCase(";;234567m66s345678p;N,E,0,0,0,0", 8);
+        testSingleCase(";;33m12456s123456p3s;E,E,0,0,0,0", 8);
+        testSingleCase(";;345678999m22354p;W,S,0,0,0,0", 8);
     }
 
     private void testSingleCase(String cas, int expected) throws ParseException {
