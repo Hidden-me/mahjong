@@ -76,6 +76,8 @@ public class MCRCalculatorTest {
             testMeldedHand();
             testTwoConcealedKongs();
             testTwoDragonPungs();
+            // 5
+            testConcealedAndMeldedKongs();
             // 4
             testOutsideHand();
             testFullyConcealedHand();
@@ -86,6 +88,21 @@ public class MCRCalculatorTest {
             testPrevalentWind();
             testSeatWind();
             testConcealedHand();
+            testAllChows();
+            testTileHog();
+            testDoublePung();
+            testTwoConcealedPungs();
+            testConcealedKong();
+            testAllSimples();
+            // 1
+            testTwoChowFans();
+            testPungOfTerminalsOrHonors();
+            testMeldedKong();
+            testOneVoidedSuit();
+            testNoHonors();
+            testUniqueWait();
+            testSelfDrawn();
+            testFlowerTiles();
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -463,6 +480,11 @@ public class MCRCalculatorTest {
     }
 
     @Test
+    public void testConcealedAndMeldedKongs() throws ParseException {
+        testSingleCase(";2222s0,3333s1,666p2;444m99s;E,E,0,0,0,0", 15);
+    }
+
+    @Test
     public void testOutsideHand() throws ParseException {
         testSingleCase(";123p0,CCC2;999m79998p;N,E,1,0,0,0", 10);
     }
@@ -508,6 +530,98 @@ public class MCRCalculatorTest {
         testSingleCase(";;234567m66s345678p;N,E,0,0,0,0", 8);
         testSingleCase(";;33m12456s123456p3s;E,E,0,0,0,0", 8);
         testSingleCase(";;345678999m22354p;W,S,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testAllChows() throws ParseException {
+        testSingleCase(";;345m12344s234576p;N,E,0,0,0,0", 12);
+        testSingleCase(";345p0;345567m55s687p;E,E,1,0,0,0", 8);
+        testSingleCase(";345p0;345m567sWW687p;E,E,1,0,0,0", 4);
+    }
+
+    @Test
+    public void testTileHog() throws ParseException {
+        testSingleCase(";999m1;22789m89sCCC7s;N,E,0,0,0,0", 8);
+        testSingleCase(";111s2,123s1;33455553s;E,E,1,0,0,0", 32);
+        testSingleCase(";;22448p55m88sPPPP8p;E,E,1,0,0,0", 27);
+    }
+
+    @Test
+    public void testDoublePung() throws ParseException {
+        testSingleCase(";234m1,555m1;567m55566s;N,E,0,0,0,0", 8);
+        testSingleCase(";999p2,999s3;35s22345p4s;E,E,0,0,0,0", 8);
+        testSingleCase(";222m1,555m3;8m222555s8m;E,E,0,0,0,0", 16);
+    }
+
+    @Test
+    public void testTwoConcealedPungs() throws ParseException {
+        testSingleCase(";;1235789m666888s5m;N,E,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testConcealedKong() throws ParseException {
+        testSingleCase(";CCCC0;56m888s11234p7m;N,E,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testAllSimples() throws ParseException {
+        testSingleCase(";345m0;22256s22456p7s;N,E,0,0,0,0", 8);
+        testSingleCase(";;44558m225566s22p8m;S,W,1,0,0,0", 27);
+    }
+
+    @Test
+    public void testTwoChowFans() throws ParseException {
+        testSingleCase(";234p1;22667788s243p;N,E,0,0,0,0", 8);
+        testSingleCase(";;234678m55s234678p;N,E,0,0,0,0", 8);
+        testSingleCase(";234s0,567s0;88s345687p;N,E,0,0,0,0", 8);
+        testSingleCase(";123m2;55789m127893s;N,E,1,0,0,0", 8);
+    }
+
+    @Test
+    public void testPungOfTerminalsOrHonors() throws ParseException {
+        testSingleCase(";WWW1,NNNN2,111p3;55m999s;E,S,1,0,0,0", 12);
+    }
+
+    @Test
+    public void testMeldedKong() throws ParseException {
+        testSingleCase(";9999s1,123p0,456s1;44s465p;E,S,1,0,0,0", 8);
+    }
+
+    @Test
+    public void testOneVoidedSuit() throws ParseException {
+        testSingleCase(";;55678m123457896p;E,S,1,0,0,0", 23);
+        testSingleCase(";;556699m22334455p;E,S,0,0,0,0", 26);
+    }
+
+    @Test
+    public void testNoHonors() throws ParseException {
+        testSingleCase(";9999s0,123p1,456s1;44s465p;E,S,0,0,0,0", 8);
+    }
+
+    @Test
+    public void testUniqueWait() throws ParseException {
+        testSingleCase(";9999p0,123p1,456p1;12333s;E,S,0,0,0,0", 8);
+        testSingleCase(";9999s0,123p1,123s1;77897p;E,S,0,0,0,0", 8);
+        testSingleCase(";9999s0,123p1,123s1;66798p;E,S,0,0,0,0", 8);
+        testSingleCase(";9999s0,123p1,123s1;66132p;E,S,0,0,0,0", 8);
+        testSingleCase(";9999s0,123p1,123s1;66243p;E,S,0,0,0,0", 7);
+        testSingleCase(";9999s0,123p1,123s1;66354p;E,S,0,0,0,0", 7);
+        testSingleCase(";9999s0,123p1,123s1;33465p;E,S,0,0,0,0", 8);
+        testSingleCase(";9999s0,123p1,123s1;66576p;E,S,0,0,0,0", 7);
+        testSingleCase(";9999s0,123p1,123s1;44687p;E,S,0,0,0,0", 7);
+        testSingleCase(";9999s0,123p1,123s1;77798p;E,S,0,0,0,0", 7);
+        testSingleCase(";FFF1,234p0;234mNPPPN;E,S,0,0,0,0", 9);
+    }
+
+    @Test
+    public void testSelfDrawn() throws ParseException {
+        testSingleCase(";FFFF2;678999m22sCC2s;E,S,1,0,0,0", 8);
+    }
+
+    @Test
+    public void testFlowerTiles() throws ParseException {
+        testSingleCase("18f;FFFF2;678999m22sCC2s;E,S,1,0,0,0", 10);
+        testSingleCase("12345678f;FFFF2;678999m22sCC2s;E,S,1,0,0,0", 16);
     }
 
     private void testSingleCase(String cas, int expected) throws ParseException {
