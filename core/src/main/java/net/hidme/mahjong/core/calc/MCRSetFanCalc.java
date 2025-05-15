@@ -232,10 +232,15 @@ public class MCRSetFanCalc {
     }
 
     private void checkTwoDragonPungs() {
-        checkAddTwoSets(
-                (c1, c2) ->
-                        c1.start().isDragon() && c2.start().isDragon(),
-                TWO_DRAGON_PUNGS
+        checkAddSuppress(
+                claims -> {
+                    final List<SuppressedClaim> target = claims.stream()
+                            .filter(c -> c.start().isDragon()).toList();
+                    if (target.size() == 2) return target;
+                    return null;
+                },
+                TWO_DRAGON_PUNGS,
+                setOf(DRAGON_PUNG, PUNG_OF_TERMINALS_OR_HONORS)
         );
     }
 

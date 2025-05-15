@@ -68,6 +68,15 @@ public class MCRCalculatorTest {
             testLastTileClaim();
             testOutWithReplacementTile();
             testRobbingTheKong();
+            // 6
+            testAllPungs();
+            testHalfFlush();
+            testMixedShiftedChows();
+            testAllTypes();
+            testMeldedHand();
+            testTwoConcealedKongs();
+            testTwoDragonPungs();
+            // 4
         } catch (Throwable e) {
             Assertions.fail(e);
         }
@@ -401,6 +410,47 @@ public class MCRCalculatorTest {
     public void testRobbingTheKong() throws ParseException {
         testSingleCase(";1111m0,345m0;56s678pWW7s;N,E,0,0,0,1", 11);
         testSingleCase(";8888p1,789m0;123s45pPP3p;S,W,0,0,0,1", 9);
+    }
+
+    @Test
+    public void testAllPungs() throws ParseException {
+        testSingleCase(";333p1,444s2;11188mSS8m;N,E,1,0,0,0", 10);
+    }
+
+    @Test
+    public void testHalfFlush() throws ParseException {
+        testSingleCase(";FFF3,789s2;11345sNN1s;N,E,0,0,0,0", 9);
+        testSingleCase(";CCC1,789m0;12345mEE6m;N,E,1,0,0,0", 25);
+        testSingleCase(";;112255889pPPPP9p;S,W,0,0,0,0", 40);
+    }
+
+    @Test
+    public void testMixedShiftedChows() throws ParseException {
+        testSingleCase(";234p0;23m345s45677p1m;N,E,0,0,0,0", 8);
+        testSingleCase(";CCCC0;567m68s456pSS7s;S,W,0,0,0,0", 19);
+    }
+
+    @Test
+    public void testAllTypes() throws ParseException {
+        testSingleCase(";678m2,444s1,FFF2;234pWW;N,E,1,0,0,0", 10);
+        testSingleCase(";;3355m55s4477pNNCC;N,E,0,0,0,0", 30);
+        testSingleCase(";PPP1;147m39s258pEE6s;N,E,0,0,0,0", 20);
+    }
+
+    @Test
+    public void testMeldedHand() throws ParseException {
+        testSingleCase(";234m0,345p1,234s0,CCCC1;11m;N,E,0,0,0,0", 10);
+    }
+
+    @Test
+    public void testTwoConcealedKongs() throws ParseException {
+        testSingleCase(";PPPP0,1111s0,345m2;67899p;N,E,0,0,0,0", 9);
+        testSingleCase(";6666s0,5555p0;55777m345s;N,E,1,0,0,0", 36);
+    }
+
+    @Test
+    public void testTwoDragonPungs() throws ParseException {
+        testSingleCase(";PPP3,FFF1;999s33354p;N,E,1,0,0,0", 9);
     }
 
     private void testSingleCase(String cas, int expected) throws ParseException {
