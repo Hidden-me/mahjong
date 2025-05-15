@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.hidme</groupId>
+        <groupId>net.hidme.mahjong</groupId>
         <artifactId>mahjong</artifactId>
         <version>0.1</version>
     </parent>
