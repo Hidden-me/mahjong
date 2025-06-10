@@ -72,12 +72,39 @@ public record Claim(Type type,  // chow/pung/kong
         }
     }
 
+    public int size() {
+        return type == Type.KONG ? 4 : 3;
+    }
+
+    /**
+     * Return the tiles in this claim in the ascending order.
+     */
     public Tile[] getTiles() {
         return switch (type) {
             case CHOW -> new Tile[]{start, start.shift(1), start.shift(2)};
             case PUNG -> new Tile[]{start, start, start};
             case KONG -> new Tile[]{start, start, start, start};
             case KNITTED_CHOW -> new Tile[]{start, start.shift(3), start.shift(6)};
+        };
+    }
+
+    /**
+     * Return the tiles in this claim in a "fancy" manner:
+     * tiles are returned in the order in which they are placed in a game.
+     * This order takes the claim source into consideration.
+     * For example, "678p2" returns [8p, 6p, 7p] as 8p is from the player on the left.
+     */
+    public Tile[] getTilesFancy() {
+        return switch (type) {
+            case CHOW -> switch (claimedIndex) {
+                case 0 -> new Tile[]{start, start.shift(1), start.shift(2)};
+                case 1 -> new Tile[]{start.shift(1), start, start.shift(2)};
+                case 2 -> new Tile[]{start.shift(2), start, start.shift(1)};
+                default -> throw new IllegalStateException("Unexpected claimed index: " + claimedIndex);
+            };
+            case PUNG -> new Tile[]{start, start, start};
+            case KONG -> new Tile[]{start, start, start, start};
+            case KNITTED_CHOW -> throw new UnsupportedOperationException("Knitted chows in getTilesFancy");
         };
     }
 
