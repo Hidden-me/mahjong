@@ -10,6 +10,7 @@ import java.awt.*;
 import java.util.Enumeration;
 
 import static net.hidme.mahjong.gui.text.Localization.*;
+import static net.hidme.mahjong.gui.util.GridBagLayoutUtils.makeConstraint;
 
 public class HandInputPanel extends JPanel {
 
@@ -23,35 +24,30 @@ public class HandInputPanel extends JPanel {
     public HandInputPanel(FanCalcPanel fanCalcPanel, ConcurrentHand hand) {
         this.hand = hand;
         this.fanCalcPanel = fanCalcPanel;
-        setBorder(new EmptyBorder(20, 50, 20, 50));
         setLayout(new BorderLayout());
         // input mode buttons
         inputModes = new ButtonGroup();
         final JPanel modePanel = createInputModePanel(inputModes);
-        add(modePanel, BorderLayout.WEST);
+        add(modePanel, BorderLayout.NORTH);
         // tile buttons
         final JPanel buttonPanel = createButtonPanel();
         add(buttonPanel);
-        // extra options
-        optionPanel = new OptionPanel();
-        add(optionPanel, BorderLayout.EAST);
     }
 
     private ConcurrentHand hand;
     private final FanCalcPanel fanCalcPanel;
     private final ButtonGroup inputModes;
-    private final OptionPanel optionPanel;
 
     private JPanel createInputModePanel(ButtonGroup inputModes) {
         final JPanel modePanel = new JPanel();
-        modePanel.setLayout(new GridLayout(6, 1));
+        modePanel.setLayout(new GridLayout(1, 6));
         final JLabel modeTitle = new JLabel(text(KEY_FAN_CALC_TITLE_INPUT_MODE));
         modeTitle.setFont(DEFAULT_FONT);
-        final JRadioButton tileButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_TILE), CMD_TILE);
-        final JRadioButton chowButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_CHOW), CMD_CHOW);
-        final JRadioButton pungButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_PUNG),CMD_PUNG);
-        final JRadioButton meldedKongButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_MELDED_KONG), CMD_MELDED_KONG);
-        final JRadioButton concealedKongButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_CONCEALED_KONG), CMD_CONCEALED_KONG);
+        final JToggleButton tileButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_TILE), CMD_TILE);
+        final JToggleButton chowButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_CHOW), CMD_CHOW);
+        final JToggleButton pungButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_PUNG),CMD_PUNG);
+        final JToggleButton meldedKongButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_MELDED_KONG), CMD_MELDED_KONG);
+        final JToggleButton concealedKongButton = createInputModeButton(inputModes, text(KEY_FAN_CALC_BUTTON_CONCEALED_KONG), CMD_CONCEALED_KONG);
         modePanel.add(modeTitle);
         modePanel.add(tileButton);
         modePanel.add(chowButton);
@@ -62,17 +58,18 @@ public class HandInputPanel extends JPanel {
         return modePanel;
     }
 
-    private JRadioButton createInputModeButton(ButtonGroup inputModes, String text, String cmd) {
-        final JRadioButton button = new JRadioButton(text);
+    private JToggleButton createInputModeButton(ButtonGroup inputModes, String text, String cmd) {
+        final JToggleButton button = new JToggleButton(text);
         button.setFont(DEFAULT_FONT);
         button.setActionCommand(cmd);
+        button.setFocusable(false);
         inputModes.add(button);
         return button;
     }
 
     private JPanel createButtonPanel() {
         final JPanel buttonPanel = new JPanel(new GridBagLayout());
-        buttonPanel.setBorder(new EmptyBorder(40, 20, 20, 20));
+        buttonPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
         int row = 0, col = 0;
         // tile buttons
         for (Tile tile : Tile.values()) {
@@ -80,12 +77,7 @@ public class HandInputPanel extends JPanel {
             if (tile.isFlower()) continue;
             // for each tile, create a button
             final JButton button = createTileButton(tile);
-            final GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = col;
-            gbc.gridy = row;
-            gbc.weightx = 1;
-            gbc.fill = GridBagConstraints.BOTH;
-            buttonPanel.add(button, gbc);
+            buttonPanel.add(button, makeConstraint(col, row, 1, 1));
             if (++col == 9) {
                 row++;
                 col = 0;
@@ -93,18 +85,13 @@ public class HandInputPanel extends JPanel {
         }
         // the "clear" button
         final JButton clearButton = createClearButton();
-        final GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = col;
-        gbc.gridy = row;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        buttonPanel.add(clearButton, gbc);
+        buttonPanel.add(clearButton, makeConstraint(col, row, 2, 1));
         return buttonPanel;
     }
 
     private JButton createTileButton(Tile tile) {
         final JButton button = new JButton(MahjongAtlas.getMahjongIcon(tile));
+        button.setFocusable(false);
         button.addActionListener(e -> {
             for (Enumeration<AbstractButton> buttons = inputModes.getElements(); buttons.hasMoreElements();) {
                 AbstractButton buttonInGroup = buttons.nextElement();
@@ -131,11 +118,9 @@ public class HandInputPanel extends JPanel {
 
     private JButton createClearButton() {
         final JButton button = new JButton(text(KEY_FAN_CALC_BUTTON_CLEAR));
+        button.setFocusable(false);
         button.setFont(DEFAULT_FONT);
-        button.addActionListener(e -> {
-            hand.clear();
-            fanCalcPanel.onHandUpdate();
-        });
+        button.addActionListener(e -> fanCalcPanel.reset());
         return button;
     }
 

@@ -61,6 +61,10 @@ public class ConcurrentHand {
         declaredTile = null;
     }
 
+    public synchronized int size() {
+        return sizeTotal();
+    }
+
     private int sizeTotal() {
         return sizeWithoutDeclaredTile() + (declaredTile == null ? 0 : 1);
     }

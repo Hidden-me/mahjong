@@ -1,9 +1,12 @@
-package net.hidme.mahjong.core.data;
+package net.hidme.mahjong.gui.text;
+
+import net.hidme.mahjong.core.data.MCRFan;
 
 /**
  * Translate MCRFan to its name.
  */
 public class MCRFanTranslator {
+
     public String translate(MCRFan fan) {
         return switch (fan) {
             case BIG_FOUR_WINDS -> "大四喜";
@@ -90,4 +93,5 @@ public class MCRFanTranslator {
             case FLOWER_TILE -> "花牌";
         };
     }
+
 }

@@ -23,7 +23,6 @@ public class HandPreviewPanel extends JPanel {
     public HandPreviewPanel(FanCalcPanel fanCalcPanel, ConcurrentHand hand) {
         this.hand = hand;
         this.fanCalcPanel = fanCalcPanel;
-        setBorder(new EmptyBorder(20, 50, MahjongAtlas.MAHJONG_HEIGHT + 20, 50));
         // claim slots
         claimSlots = new LinkedList<>();
         for (int i = 0; i < 4; i++) {

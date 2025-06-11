@@ -23,13 +23,25 @@ public class Localization {
     public static final String KEY_FAN_CALC_OPTION_KONG = "fan-calc.option.kong";
     public static final String KEY_FAN_CALC_OPTION_PREVALENT_WIND = "fan-calc.option.prevalent-wind";
     public static final String KEY_FAN_CALC_OPTION_SEAT_WIND = "fan-calc.option.seat-wind";
-    public static final String KEY_FAN_CALC_OPTION_WIND_EAST = "fan-calc.option.wind.east";
-    public static final String KEY_FAN_CALC_OPTION_WIND_SOUTH = "fan-calc.option.wind.south";
-    public static final String KEY_FAN_CALC_OPTION_WIND_WEST = "fan-calc.option.wind.west";
-    public static final String KEY_FAN_CALC_OPTION_WIND_NORTH = "fan-calc.option.wind.north";
+    public static final String KEY_FAN_CALC_OPTION_PREVALENT_WIND_EAST = "fan-calc.option.prevalent-wind.east";
+    public static final String KEY_FAN_CALC_OPTION_PREVALENT_WIND_SOUTH = "fan-calc.option.prevalent-wind.south";
+    public static final String KEY_FAN_CALC_OPTION_PREVALENT_WIND_WEST = "fan-calc.option.prevalent-wind.west";
+    public static final String KEY_FAN_CALC_OPTION_PREVALENT_WIND_NORTH = "fan-calc.option.prevalent-wind.north";
+    public static final String KEY_FAN_CALC_OPTION_SEAT_WIND_EAST = "fan-calc.option.seat-wind.east";
+    public static final String KEY_FAN_CALC_OPTION_SEAT_WIND_SOUTH = "fan-calc.option.seat-wind.south";
+    public static final String KEY_FAN_CALC_OPTION_SEAT_WIND_WEST = "fan-calc.option.seat-wind.west";
+    public static final String KEY_FAN_CALC_OPTION_SEAT_WIND_NORTH = "fan-calc.option.seat-wind.north";
+    public static final String KEY_FAN_CALC_HINT = "fan-calc.hint";
+
+    public static final String KEY_FAN_CALC_SINGLE_SCORE = "fan-calc.single-score";
+    public static final String KEY_FAN_CALC_TOTAL_SCORE = "fan-calc.total-score";
 
     public static String text(String key) {
         return TEXT_MAP.get(key);
+    }
+
+    public static String text(String key, Object... args) {
+        return String.format(TEXT_TEMPLATE_MAP.get(key), args);
     }
 
     public static String textFontName() {
@@ -40,7 +52,7 @@ public class Localization {
         return EMOJI_FONT_NAME;
     }
 
-    private static final Map<String, String> TEXT_MAP;
+    private static final Map<String, String> TEXT_MAP, TEXT_TEMPLATE_MAP;
     private static final String TEXT_FONT_NAME, EMOJI_FONT_NAME;
 
     static {
@@ -61,13 +73,31 @@ public class Localization {
         TEXT_MAP.put(KEY_FAN_CALC_OPTION_SELF_DRAWN, "自摸");
         TEXT_MAP.put(KEY_FAN_CALC_OPTION_LAST_TILE, "绝张");
         TEXT_MAP.put(KEY_FAN_CALC_OPTION_LAST_DRAW_OR_CLAIM, "海底");
-        TEXT_MAP.put(KEY_FAN_CALC_OPTION_KONG, "杠");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_KONG, "杠上");
         TEXT_MAP.put(KEY_FAN_CALC_OPTION_PREVALENT_WIND, "圈风");
         TEXT_MAP.put(KEY_FAN_CALC_OPTION_SEAT_WIND, "门风");
-        TEXT_MAP.put(KEY_FAN_CALC_OPTION_WIND_EAST, "东");
-        TEXT_MAP.put(KEY_FAN_CALC_OPTION_WIND_SOUTH, "南");
-        TEXT_MAP.put(KEY_FAN_CALC_OPTION_WIND_WEST, "西");
-        TEXT_MAP.put(KEY_FAN_CALC_OPTION_WIND_NORTH, "北");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_PREVALENT_WIND_EAST, "东风圈");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_PREVALENT_WIND_SOUTH, "南风圈");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_PREVALENT_WIND_WEST, "西风圈");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_PREVALENT_WIND_NORTH, "北风圈");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_SEAT_WIND_EAST, "东风位");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_SEAT_WIND_SOUTH, "南风位");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_SEAT_WIND_WEST, "西风位");
+        TEXT_MAP.put(KEY_FAN_CALC_OPTION_SEAT_WIND_NORTH, "北风位");
+        TEXT_MAP.put(KEY_FAN_CALC_HINT, """
+            欢迎使用算番器！
+            - 要输入牌张，先选择输入模式，
+              然后点击下方牌张以输入。
+            - 以“吃”模式为例，会输入一个顺子副露，
+              该顺子以你点击的牌张为起始（例如点击
+              一万会输入一万-三万的顺子副露）。
+            - 输入牌张后，可点击上方显示的牌张移除。
+              最下方有若干选项，会影响算番结果，
+              所以请仔细设置。""");
+        // default text template
+        TEXT_TEMPLATE_MAP = new HashMap<>();
+        TEXT_TEMPLATE_MAP.put(KEY_FAN_CALC_SINGLE_SCORE, "%d番");
+        TEXT_TEMPLATE_MAP.put(KEY_FAN_CALC_TOTAL_SCORE, "总计%d番");
         // default font
         TEXT_FONT_NAME = "微软雅黑";
         EMOJI_FONT_NAME = "Segoe UI Emoji";
