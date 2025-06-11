@@ -316,7 +316,8 @@ public class MCRTotalFanCalc {
         for (Claim claim : normalStruct.claims) {
             if (Stream.of(claim.getTiles()).noneMatch(t -> t.isNumber() && t.number == 5)) return;
         }
-        result.addFan(ALL_FIVE);
+        if (normalStruct.pair.isNumber() && normalStruct.pair.number == 5)
+            result.addFan(ALL_FIVE);
     }
 
     private void checkThreeConcealedPungs() {
