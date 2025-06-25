@@ -115,6 +115,7 @@ public abstract class Hand {
 
     // each tile is finite
     private boolean isValid() {
+        if (declaredTile == null) return false;
         final SortedMultiset<Tile> normalTiles = getHandTilesWithClaims();
         for (Multiset.Entry<Tile> entry : normalTiles.entrySet()) {
             if (entry.getCount() < 0 || entry.getCount() > 4) {
