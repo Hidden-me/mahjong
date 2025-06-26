@@ -31,11 +31,11 @@ public class AnswerArea extends JTextArea {
             final int fanScore = entry.getKey().score;
             final int multiplicity = entry.getValue();
             sb.append(fanName).append("\t")
-                    .append(text(KEY_FAN_CALC_SINGLE_SCORE, fanScore))
+                    .append(text(KEY_FAN_QUIZ_SINGLE_SCORE, fanScore))
                     .append(multiplicity > 1 ? " * " + multiplicity : "")
                     .append('\n');
         }
-        sb.append(text(KEY_FAN_CALC_TOTAL_SCORE, result.getFanTotal()));
+        sb.append(text(KEY_FAN_QUIZ_TOTAL_SCORE, result.getFanTotal()));
         setText(sb.toString());
     }
 

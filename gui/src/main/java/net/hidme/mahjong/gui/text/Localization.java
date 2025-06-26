@@ -51,6 +51,8 @@ public class Localization {
 
     public static final String KEY_FAN_CALC_SINGLE_SCORE = "fan-calc.single-score";
     public static final String KEY_FAN_CALC_TOTAL_SCORE = "fan-calc.total-score";
+    public static final String KEY_FAN_QUIZ_SINGLE_SCORE = "fan-quiz.single-score";
+    public static final String KEY_FAN_QUIZ_TOTAL_SCORE = "fan-quiz.total-score";
 
     public static String text(String key) {
         return TEXT_MAP.get(key);
@@ -128,6 +130,8 @@ public class Localization {
         TEXT_TEMPLATE_MAP = new HashMap<>();
         TEXT_TEMPLATE_MAP.put(KEY_FAN_CALC_SINGLE_SCORE, "%d番");
         TEXT_TEMPLATE_MAP.put(KEY_FAN_CALC_TOTAL_SCORE, "总计%d番");
+        TEXT_TEMPLATE_MAP.put(KEY_FAN_QUIZ_SINGLE_SCORE, "%d番");
+        TEXT_TEMPLATE_MAP.put(KEY_FAN_QUIZ_TOTAL_SCORE, "总计%d番");
         // default font
         TEXT_FONT_NAME = "微软雅黑";
         EMOJI_FONT_NAME = "Segoe UI Emoji";
