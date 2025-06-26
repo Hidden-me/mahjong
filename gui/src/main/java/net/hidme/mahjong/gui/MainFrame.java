@@ -1,6 +1,7 @@
 package net.hidme.mahjong.gui;
 
 import net.hidme.mahjong.gui.fancalc.FanCalcPanel;
+import net.hidme.mahjong.gui.fanquiz.FanQuizPanel;
 
 import javax.swing.*;
 import java.awt.*;

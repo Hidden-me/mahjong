@@ -10,11 +10,11 @@ import java.util.Map;
 
 import static net.hidme.mahjong.gui.text.Localization.*;
 
-public class CalcResultLabel extends JTextArea {
+public class CalcResultArea extends JTextArea {
 
     private static final Font DEFAULT_FONT = new Font(textFontName(), Font.PLAIN, 18);
 
-    public CalcResultLabel() {
+    public CalcResultArea() {
         super(text(KEY_FAN_CALC_HINT));
         setEditable(false);
         setFont(DEFAULT_FONT);

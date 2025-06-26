@@ -3,8 +3,6 @@ package net.hidme.mahjong.gui.fancalc;
 import net.hidme.mahjong.core.calc.MCRCalculator;
 import net.hidme.mahjong.core.data.MCRHand;
 import net.hidme.mahjong.core.data.MCRResult;
-import net.hidme.mahjong.core.data.Result;
-import net.hidme.mahjong.core.data.Tile;
 import net.hidme.mahjong.gui.MainFrame;
 import net.hidme.mahjong.gui.ScenePanel;
 
@@ -40,8 +38,8 @@ public class FanCalcPanel extends ScenePanel {
         add(centerPanel);
         // calculation result
         final JPanel resultPanel = new JPanel();
-        calcResultLabel = new CalcResultLabel();
-        resultPanel.add(calcResultLabel);
+        calcResultArea = new CalcResultArea();
+        resultPanel.add(calcResultArea);
         resultPanel.setBorder(new EmptyBorder(20, 20, 20, 0));
         add(resultPanel, BorderLayout.EAST);
         // back button
@@ -52,7 +50,7 @@ public class FanCalcPanel extends ScenePanel {
     private final ConcurrentHand hand;
     private final HandPreviewPanel handPreview;
     private final OptionPanel optionPanel;
-    private final CalcResultLabel calcResultLabel;
+    private final CalcResultArea calcResultArea;
 
     private JButton createBackButton() {
         final JButton button = new JButton("👈");
@@ -77,7 +75,7 @@ public class FanCalcPanel extends ScenePanel {
 
     protected void reset() {
         hand.clear();
-        calcResultLabel.reset();
+        calcResultArea.reset();
         onHandUpdate();
     }
 
@@ -86,7 +84,7 @@ public class FanCalcPanel extends ScenePanel {
         if (mcrHand != null) {
             final MCRCalculator calculator = new MCRCalculator();
             final MCRResult result = (MCRResult) calculator.calculate(mcrHand);
-            calcResultLabel.setResult(result);
+            calcResultArea.setResult(result);
         }
     }
 

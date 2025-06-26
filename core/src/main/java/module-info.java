@@ -3,5 +3,6 @@ module net.hidme.mahjong.core {
 
     exports net.hidme.mahjong.core.calc;
     exports net.hidme.mahjong.core.data;
+    exports net.hidme.mahjong.core.quiz;
     exports net.hidme.mahjong.core.util;
 }
