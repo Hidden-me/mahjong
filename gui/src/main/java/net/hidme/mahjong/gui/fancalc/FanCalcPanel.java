@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 import static net.hidme.mahjong.gui.text.Localization.emojiFontName;
+import static net.hidme.mahjong.gui.util.GridBagLayoutUtils.makeConstraint;
 
 public class FanCalcPanel extends ScenePanel {
 
@@ -27,24 +28,25 @@ public class FanCalcPanel extends ScenePanel {
         handPreview.setBorder(new EmptyBorder(20, 20, 20, 20));
         add(handPreview, BorderLayout.NORTH);
         // center panel
-        final JPanel centerPanel = new JPanel(new BorderLayout());
+        final JPanel centerPanel = new JPanel(new GridBagLayout());
         final HandInputPanel inputPanel = new HandInputPanel(this, hand);
         inputPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
-        centerPanel.add(inputPanel);
+        centerPanel.add(inputPanel, makeConstraint(0, 0, 1, 1, 0, 0));
         optionPanel = new OptionPanel(this);
-        optionPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
-        centerPanel.add(optionPanel, BorderLayout.SOUTH);
-        centerPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-        add(centerPanel);
-        // calculation result
-        final JPanel resultPanel = new JPanel();
+        optionPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
+        centerPanel.add(optionPanel, makeConstraint(0, 1, 1, 1, 0, 0));
+        final JPanel resultPanel = new JPanel(new BorderLayout());
         calcResultArea = new CalcResultArea();
         resultPanel.add(calcResultArea);
-        resultPanel.setBorder(new EmptyBorder(20, 20, 20, 0));
-        add(resultPanel, BorderLayout.EAST);
+        resultPanel.setBorder(new EmptyBorder(20, 20, 0, 0));
+        centerPanel.add(resultPanel, makeConstraint(1, 0, 1, 2, 1, 0));
+        add(centerPanel);
         // back button
+        final JPanel backPanel = new JPanel(new BorderLayout());
+        backPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
         final JButton backButton = createBackButton();
-        add(backButton, BorderLayout.SOUTH);
+        backPanel.add(backButton);
+        add(backPanel, BorderLayout.SOUTH);
     }
 
     private final ConcurrentHand hand;

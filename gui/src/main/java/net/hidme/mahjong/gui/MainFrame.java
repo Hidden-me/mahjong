@@ -30,8 +30,8 @@ public class MainFrame extends JFrame {
         final MenuPanel menuPanel = new MenuPanel(this);
         addScene(menuPanel, SCENE_MENU);
         // frame location and size
-        setLocation(screenSize.width / 5, screenSize.height / 5);
-        setSize(screenSize.width * 3 / 5, screenSize.height * 3 / 5);
+        setLocation(screenSize.width / 6, screenSize.height / 6);
+        setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
         // close operation
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         // show the frame
