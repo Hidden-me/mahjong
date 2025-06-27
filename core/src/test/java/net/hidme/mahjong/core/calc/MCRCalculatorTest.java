@@ -140,6 +140,7 @@ public class MCRCalculatorTest {
         testSingleCase(";;11123456789992m;E,E,0,0,0,0", 92);
         testSingleCase(";;11123456789991p;E,E,0,0,0,0", 106);
         testSingleCase(";123s1;11456789999s;S,W,0,0,0,0", 43);
+        testSingleCase(";;11112345678999s;E,E,0,0,0,0", 45);
     }
 
     @Test
