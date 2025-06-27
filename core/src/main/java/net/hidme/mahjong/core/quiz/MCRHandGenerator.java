@@ -13,7 +13,7 @@ import static net.hidme.mahjong.core.data.Tile.*;
 public class MCRHandGenerator {
 
     public MCRHandGenerator() {
-        fanRandom = new WeightRandom<>(fans, fanWeights);
+        fanRandom = new WeightRandom<>(FANS, FAN_WEIGHTS);
         simpleRandom = new Random();
         windRandom = new WeightRandom<>(Wind.values());
         usedTiles = TreeMultiset.create();
@@ -31,24 +31,26 @@ public class MCRHandGenerator {
         return generateOnBaseFan(baseFan);
     }
 
-    private static final MCRFan[] fans;
-    private static final int[] fanWeights;
+    private static final MCRFan[] FANS;
+    private static final int[] FAN_WEIGHTS;
+    private static final Tile[] ORPHANS;
 
     static {
-        fans = MCRFan.values();
-        fanWeights = new int[fans.length];
-        for (int i = 0; i < fans.length; i++) {
-            switch (fans[i].score) {
-                case 88, 64 -> fanWeights[i] = 1;
-                case 48 -> fanWeights[i] = 2;
-                case 32 -> fanWeights[i] = 3;
-                case 24 -> fanWeights[i] = 8;
-                case 16, 12 -> fanWeights[i] = 16;
-                case 8 -> fanWeights[i] = 32;
-                case 6, 5 -> fanWeights[i] = 48;
-                case 4, 2, 1 -> fanWeights[i] = 64;
+        FANS = MCRFan.values();
+        FAN_WEIGHTS = new int[FANS.length];
+        for (int i = 0; i < FANS.length; i++) {
+            switch (FANS[i].score) {
+                case 88, 64 -> FAN_WEIGHTS[i] = 1;
+                case 48 -> FAN_WEIGHTS[i] = 2;
+                case 32 -> FAN_WEIGHTS[i] = 3;
+                case 24 -> FAN_WEIGHTS[i] = 8;
+                case 16, 12 -> FAN_WEIGHTS[i] = 16;
+                case 8 -> FAN_WEIGHTS[i] = 32;
+                case 6, 5 -> FAN_WEIGHTS[i] = 48;
+                case 4, 2, 1 -> FAN_WEIGHTS[i] = 64;
             }
         }
+        ORPHANS = new Tile[]{M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P};
     }
 
     private final WeightRandom<MCRFan> fanRandom;
@@ -85,7 +87,6 @@ public class MCRHandGenerator {
             // normal base fan (>= 4)
             generateOnNormalBaseFan(baseFan);
         }
-
         fixHand();
         return getHand();
     }
@@ -105,10 +106,10 @@ public class MCRHandGenerator {
             case BIG_FOUR_WINDS -> generateBigFourWinds();
             case BIG_THREE_DRAGONS -> generateBigThreeDragons();
             case ALL_GREEN -> generateAllGreen();
-            case NINE_GATES -> generateBigFourWinds();
-            case FOUR_KONGS -> generateBigFourWinds();
-            case SEVEN_SHIFTED_PAIRS -> generateBigFourWinds();
-            case THIRTEEN_ORPHANS -> generateBigFourWinds();
+            case NINE_GATES -> generateNineGates();
+            case FOUR_KONGS -> generateFourKongs();
+            case SEVEN_SHIFTED_PAIRS -> generateSevenShiftedPairs();
+            case THIRTEEN_ORPHANS -> generateThirteenOrphans();
             case ALL_TERMINALS -> generateBigFourWinds();
             case LITTLE_FOUR_WINDS -> generateBigFourWinds();
             case LITTLE_THREE_DRAGONS -> generateBigFourWinds();
@@ -195,6 +196,48 @@ public class MCRHandGenerator {
         generatePair(range);
     }
 
+    private void generateNineGates() {
+        final WeightRandom<Character> suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
+        final char suit = suitRandom.next();
+        appendNonDeclaredTile(getInstance(1, suit));
+        appendNonDeclaredTile(getInstance(1, suit));
+        appendNonDeclaredTile(getInstance(1, suit));
+        appendNonDeclaredTile(getInstance(2, suit));
+        appendNonDeclaredTile(getInstance(3, suit));
+        appendNonDeclaredTile(getInstance(4, suit));
+        appendNonDeclaredTile(getInstance(5, suit));
+        appendNonDeclaredTile(getInstance(6, suit));
+        appendNonDeclaredTile(getInstance(7, suit));
+        appendNonDeclaredTile(getInstance(8, suit));
+        appendNonDeclaredTile(getInstance(9, suit));
+        appendNonDeclaredTile(getInstance(9, suit));
+        appendNonDeclaredTile(getInstance(9, suit));
+        appendDeclaredTile(getInstance(simpleRandom.nextInt(1, 10), suit));
+    }
+
+    private void generateFourKongs() {
+        for (int i = 0; i < 4; i++) {
+            generateClaim(KONG);
+        }
+        generatePair();
+    }
+
+    private void generateSevenShiftedPairs() {
+        final WeightRandom<Character> suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
+        final int startIndex = simpleRandom.nextInt(1, 4);
+        final char suit = suitRandom.next();
+        for (int i = 0; i < 7; i++) {
+            appendPair(getInstance(startIndex + i, suit));
+        }
+    }
+
+    private void generateThirteenOrphans() {
+        for (Tile tile : ORPHANS) {
+            appendTile(tile);
+        }
+        appendTile(ORPHANS[simpleRandom.nextInt(ORPHANS.length)]);
+    }
+
     private void generateClaim() {
         // generate a claim or 3 tiles
         generateClaim(ALL_TILE_SET);
@@ -225,6 +268,22 @@ public class MCRHandGenerator {
         } while (newRange.isEmpty());
         if (possibleTypes.isEmpty()) {
             throw new IllegalStateException("No possible claim type; current hand: " + getTmpHand());
+        }
+        // append the claim/tiles
+        appendClaimOrTiles(claimType, getRandomTile(newRange));
+    }
+
+    private void generateClaim(Claim.Type claimType) {
+        // generate a claim or 3 tiles
+        final Set<Tile> newRange = switch (claimType) {
+            // how many tiles are required for each distinct tile in the claim
+            case PUNG -> getUsableTiles(ALL_TILE_SET, 3);
+            case KONG -> getUsableTiles(ALL_TILE_SET, 4);
+            case CHOW -> getUsableTilesForChow(ALL_TILE_SET, 1, 2);
+            case KNITTED_CHOW -> getUsableTilesForChow(ALL_TILE_SET, 3, 6);
+        };
+        if (newRange.isEmpty()) {
+            throw new IllegalStateException("No possible claim of type " + claimType + "; current hand: " + getTmpHand());
         }
         // append the claim/tiles
         appendClaimOrTiles(claimType, getRandomTile(newRange));
@@ -335,11 +394,21 @@ public class MCRHandGenerator {
     private void appendTile(Tile tile) {
         if (declaredTile == null && (effectiveTileCount == 13 || simpleRandom.nextInt(4) == 0)) {
             // declared tile
-            declaredTile = tile;
+            appendDeclaredTile(tile);
         } else {
             // non-declared tile
-            tiles.add(tile);
+            appendNonDeclaredTile(tile);
         }
+    }
+
+    private void appendDeclaredTile(Tile tile) {
+        declaredTile = tile;
+        usedTiles.add(tile);
+        effectiveTileCount++;
+    }
+
+    private void appendNonDeclaredTile(Tile tile) {
+        tiles.add(tile);
         usedTiles.add(tile);
         effectiveTileCount++;
     }
@@ -347,11 +416,13 @@ public class MCRHandGenerator {
     private void fixHand() {
         final MCRHand hand = getTmpHand();
         // make sure that options do not conflict with the hand of tiles
+        // fix lastTile
         if (Claim.getTiles(claims).count(declaredTile) == 3) {
             lastTile = true;
         } else if (hand.getConcealedTiles().count(declaredTile) > 0) {
             lastTile = false;
         }
+        // fix selfDrawn
         if (kong) {
             final boolean selfDrawnDisallowed = hand.claimsOfType(Claim.Type.KONG).isEmpty();
             final boolean selfDrawnForced = hand.getHandTilesWithClaims().count(declaredTile) > 1;
@@ -363,6 +434,11 @@ public class MCRHandGenerator {
             } else if (selfDrawnForced) {
                 selfDrawn = true;
             }
+        }
+        // robbing the kong
+        if (kong && !selfDrawn) {
+            if (!lastTile) kong = false;
+            lastDrawOrClaim = false;
         }
     }
 

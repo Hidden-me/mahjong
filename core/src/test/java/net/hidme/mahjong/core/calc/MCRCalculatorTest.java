@@ -436,8 +436,8 @@ public class MCRCalculatorTest {
 
     @Test
     public void testRobbingTheKong() throws ParseException {
-        testSingleCase(";1111m0,345m0;56s678pWW7s;N,E,0,0,0,1", 11);
-        testSingleCase(";8888p1,789m0;123s45pPP3p;S,W,0,0,0,1", 9);
+        testSingleCase(";1111m0,345m0;56s678pWW7s;N,E,0,1,0,1", 11);
+        testSingleCase(";8888p1,789m0;123s45pPP3p;S,W,0,1,0,1", 9);
     }
 
     @Test

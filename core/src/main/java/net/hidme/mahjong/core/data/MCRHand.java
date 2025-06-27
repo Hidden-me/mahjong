@@ -38,7 +38,7 @@ public class MCRHand extends Hand {
         if (!allowsConflictingOptions) {
             final String msg = checkValid();
             if (msg != null)
-                throw new IllegalArgumentException("invalid MCR handL: " + msg);
+                throw new IllegalArgumentException("invalid MCR hand: " + msg);
         }
     }
 
@@ -56,6 +56,10 @@ public class MCRHand extends Hand {
         // robbing the kong
         if (kong && !selfDrawn && getHandTilesWithClaims().count(declaredTile) > 1)
             return "robbing the kong (kong and not selfDrawn) must not occur if the declared tile is not unique in the hand";
+        if (!selfDrawn && lastDrawOrClaim && kong)
+            return "last claim and robbing the kong cannot occur at the same time";
+        if (!selfDrawn && kong && !lastTile)
+            return "robbing the kong must indicate last tile";
         // last tile
         if (!lastTile && Claim.getTiles(List.of(claims)).count(declaredTile) == 3)
             return "lastTile must occur if the declared tile is used thrice";
