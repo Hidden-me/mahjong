@@ -1,5 +1,6 @@
 package net.hidme.mahjong.core.data;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -63,4 +64,19 @@ public class MCRHand extends Hand {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return "MCRHand{" +
+                "selfDrawn=" + selfDrawn +
+                ", lastTile=" + lastTile +
+                ", lastDrawOrClaim=" + lastDrawOrClaim +
+                ", kong=" + kong +
+                ", prevalentWind=" + prevalentWind +
+                ", seatWind=" + seatWind +
+                ", flowers=" + Arrays.toString(flowers) +
+                ", claims=" + Arrays.toString(claims) +
+                ", tiles=" + Arrays.toString(tiles) +
+                ", declaredTile=" + declaredTile +
+                '}';
+    }
 }

@@ -3,6 +3,7 @@ package net.hidme.mahjong.gui.fancalc;
 import net.hidme.mahjong.core.data.Claim;
 import net.hidme.mahjong.core.data.Tile;
 import net.hidme.mahjong.gui.common.ClaimPanel;
+import net.hidme.mahjong.gui.common.TileLabel;
 import net.hidme.mahjong.gui.icon.MahjongAtlas;
 
 import javax.swing.*;

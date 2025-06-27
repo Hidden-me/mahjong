@@ -28,7 +28,6 @@ public record HandViewModel(
                     options.lastDrawOrClaim(), options.kong(),
                     options.prevalentWind(), options.seatWind());
         } catch (Throwable e) {
-            e.printStackTrace();
             return null;
         }
     }

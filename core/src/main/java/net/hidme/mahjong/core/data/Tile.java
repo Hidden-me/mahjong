@@ -6,6 +6,7 @@ import com.google.common.collect.TreeMultiset;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public enum Tile {
@@ -106,9 +107,15 @@ public enum Tile {
         return shift(1);
     }
 
+    /**
+     * Get the offset-th tile starting from the next tile of this tile.
+     * This method is only applicable when this tile is non-honor/flower and the desired tile exists.
+     */
     public Tile shift(int offset) {
         return getInstance(number + offset, suit);
     }
+
+    public static final Set<Tile> ALL_TILE_SET = new HashSet<>(List.of(Tile.values()));
 
     public static boolean isNumberSuit(char suit) {
         return suit == 'm' || suit == 's' || suit == 'p';

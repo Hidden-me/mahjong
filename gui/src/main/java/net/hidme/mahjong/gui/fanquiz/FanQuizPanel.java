@@ -9,10 +9,7 @@ import net.hidme.mahjong.gui.ScenePanel;
 import net.hidme.mahjong.gui.common.AccumulatorButton;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;

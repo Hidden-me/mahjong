@@ -2,7 +2,6 @@ package net.hidme.mahjong.gui.common;
 
 import net.hidme.mahjong.core.data.Claim;
 import net.hidme.mahjong.core.data.Tile;
-import net.hidme.mahjong.gui.fancalc.TileLabel;
 import net.hidme.mahjong.gui.icon.MahjongAtlas;
 
 import javax.swing.*;
@@ -51,13 +50,14 @@ public class ClaimPanel extends JPanel {
         final int sidewaysTileIndex = getSidewaysTileIndex(claim);
         final int claimSize = claim.size();
         // given the claim tiles, update slots
+        final boolean isConcealedKong = claim.type() == Claim.Type.KONG && claim.claimedFrom() == 0;
         int i = 0;
         for (TileLabel slot : slots) {
             if (i >= claimSize) {
                 slot.setVisible(false);
             } else {
                 final boolean sideways = sidewaysTileIndex == i;
-                slot.setTile(tiles[i], sideways);
+                slot.setTile(tiles[i], sideways, isConcealedKong && (i == 0 || i == 3));
                 struts.get(i).setVisible(sideways);
                 slot.setVisible(true);
             }
