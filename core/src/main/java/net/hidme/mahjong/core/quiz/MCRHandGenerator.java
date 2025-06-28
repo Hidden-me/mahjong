@@ -78,8 +78,7 @@ public class MCRHandGenerator {
     }
 
     private MCRFan getRandomFan() {
-        //return fanRandom.next();
-        return LITTLE_FOUR_WINDS;
+        return fanRandom.next();
     }
 
     private MCRHand generateOnBaseFan(MCRFan baseFan) {
