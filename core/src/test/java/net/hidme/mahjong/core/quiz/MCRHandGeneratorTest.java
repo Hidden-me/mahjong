@@ -18,6 +18,9 @@ public class MCRHandGeneratorTest {
         testBaseFan(FOUR_KONGS);
         testBaseFan(SEVEN_SHIFTED_PAIRS);
         testBaseFan(THIRTEEN_ORPHANS);
+        // 64
+        testBaseFan(ALL_TERMINALS);
+        testBaseFan(LITTLE_FOUR_WINDS);
     }
 
     private void testBaseFan(MCRFan baseFan) {
