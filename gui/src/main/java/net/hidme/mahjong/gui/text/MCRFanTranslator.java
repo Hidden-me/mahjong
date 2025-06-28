@@ -69,8 +69,8 @@ public class MCRFanTranslator {
             case TWO_MELDED_KONGS -> "双明杠";
             case LAST_TILE -> "和绝张";
             case DRAGON_PUNG -> "箭刻";
-            case PREVALENT_WIND -> "门风刻";
-            case SEAT_WIND -> "圈风刻";
+            case PREVALENT_WIND -> "圈风刻";
+            case SEAT_WIND -> "门风刻";
             case CONCEALED_HAND -> "门前清";
             case ALL_CHOWS -> "平和";
             case TILE_HOG -> "四归一";
