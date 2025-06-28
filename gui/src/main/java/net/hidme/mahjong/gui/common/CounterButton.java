@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class CounterButton extends JButton {
 
@@ -13,10 +12,10 @@ public class CounterButton extends JButton {
         super(text);
         this.minCount = minCount;
         this.maxCount = maxCount;
+        final JButton buttonRef = this;
         addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
+            // upon click is triggered with proximity
+            private void onClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     // increase the count upon a left click
                     increase();
@@ -44,6 +43,7 @@ public class CounterButton extends JButton {
                     getModel().setPressed(false);
                     getModel().setArmed(false);
                 }
+                if (buttonRef.contains(e.getPoint())) onClicked(e);
             }
         });
     }
