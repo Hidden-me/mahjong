@@ -613,6 +613,7 @@ public class MCRCalculatorTest {
         testSingleCase(";9999s0,123p1,123s1;44687p;E,S,0,0,0,0", 7);
         testSingleCase(";9999s0,123p1,123s1;77798p;E,S,0,0,0,0", 7);
         testSingleCase(";FFF1,234p0;234mNPPPN;E,S,0,0,0,0", 9);
+        testSingleCase(";9999s0,123s1,123s1,123s1;44s;E,S,0,0,0,0", 52);
     }
 
     @Test

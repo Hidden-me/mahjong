@@ -21,6 +21,10 @@ public class MCRHandGeneratorTest {
         // 64
         testBaseFan(ALL_TERMINALS);
         testBaseFan(LITTLE_FOUR_WINDS);
+        testBaseFan(LITTLE_THREE_DRAGONS);
+        testBaseFan(ALL_HONORS);
+        testBaseFan(FOUR_CONCEALED_PUNGS);
+        testBaseFan(PURE_TERMINAL_CHOWS);
     }
 
     private void testBaseFan(MCRFan baseFan) {
@@ -30,6 +34,7 @@ public class MCRHandGeneratorTest {
     private void testBaseFan(MCRFan baseFan, int loopCount) {
         try {
             final MCRHandGenerator generator = new MCRHandGenerator();
+            generator.debugMode = true;
             for (int i = 0; i < loopCount; i++) {
                 generator.generate(baseFan);
             }

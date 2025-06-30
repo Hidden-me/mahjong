@@ -16,10 +16,14 @@ public class MCRHandGenerator {
         fanRandom = new WeightRandom<>(FANS, FAN_WEIGHTS);
         simpleRandom = new Random();
         windRandom = new WeightRandom<>(Wind.values());
+        suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
         usedTiles = TreeMultiset.create();
         effectiveTileCount = 0;
         claims = new ArrayList<>();
         tiles = new ArrayList<>();
+        // debug mode
+        // 1. the same weight for each claim type
+        debugMode = false;
     }
 
     public MCRHand generate() {
@@ -33,8 +37,9 @@ public class MCRHandGenerator {
 
     private static final MCRFan[] FANS;
     private static final int[] FAN_WEIGHTS;
-    private static final Tile[] ORPHANS, WINDS;
+    private static final Tile[] ORPHANS, WINDS, DRAGONS;
     private static final Set<Tile> TERMINAL_SET, HONOR_SET, ORPHAN_SET;
+    private static final Set<Claim.Type> RANDOM_CLAIM_TYPES;
 
     static {
         FANS = MCRFan.values();
@@ -53,14 +58,17 @@ public class MCRHandGenerator {
         }
         ORPHANS = new Tile[]{M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P};
         WINDS = new Tile[]{E, S, W, N};
+        DRAGONS = new Tile[]{C, F, P};
         TERMINAL_SET = Set.of(M1, M9, P1, P9, S1, S9);
         HONOR_SET = Set.of(E, S, W, N, C, F, P);
         ORPHAN_SET = Set.of(M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P);
+        RANDOM_CLAIM_TYPES = Set.of(CHOW, PUNG, KONG);
     }
 
     private final WeightRandom<MCRFan> fanRandom;
     private final Random simpleRandom;
     private final WeightRandom<Wind> windRandom;
+    private final WeightRandom<Character> suitRandom;
     private final SortedMultiset<Tile> usedTiles;
     private int effectiveTileCount;
     private final List<Claim> claims;
@@ -68,6 +76,8 @@ public class MCRHandGenerator {
     private Tile declaredTile;
     private boolean selfDrawn, lastTile, lastDrawOrClaim, kong;
     private Wind prevalentWind, seatWind;
+
+    boolean debugMode;
 
     private void reset() {
         usedTiles.clear();
@@ -117,10 +127,10 @@ public class MCRHandGenerator {
             case THIRTEEN_ORPHANS -> generateThirteenOrphans();
             case ALL_TERMINALS -> generateAllTerminals();
             case LITTLE_FOUR_WINDS -> generateLittleFourWinds();
-            case LITTLE_THREE_DRAGONS -> generateBigFourWinds();
-            case ALL_HONORS -> generateBigFourWinds();
-            case FOUR_CONCEALED_PUNGS -> generateBigFourWinds();
-            case PURE_TERMINAL_CHOWS -> generateBigFourWinds();
+            case LITTLE_THREE_DRAGONS -> generateLittleThreeDragons();
+            case ALL_HONORS -> generateAllHonors();
+            case FOUR_CONCEALED_PUNGS -> generateFourConcealedPungs();
+            case PURE_TERMINAL_CHOWS -> generatePureTerminalChows();
             case QUADRUPLE_CHOW -> generateBigFourWinds();
             case FOUR_PURE_SHIFTED_PUNGS -> generateBigFourWinds();
             case FOUR_PURE_SHIFTED_CHOWS -> generateBigFourWinds();
@@ -202,7 +212,6 @@ public class MCRHandGenerator {
     }
 
     private void generateNineGates() {
-        final WeightRandom<Character> suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
         final char suit = suitRandom.next();
         appendNonDeclaredTile(getInstance(1, suit));
         appendNonDeclaredTile(getInstance(1, suit));
@@ -228,7 +237,6 @@ public class MCRHandGenerator {
     }
 
     private void generateSevenShiftedPairs() {
-        final WeightRandom<Character> suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
         final int startIndex = simpleRandom.nextInt(1, 4);
         final char suit = suitRandom.next();
         for (int i = 0; i < 7; i++) {
@@ -259,6 +267,39 @@ public class MCRHandGenerator {
         generateClaim();
     }
 
+    private void generateLittleThreeDragons() {
+        final int dragonPairIndex = simpleRandom.nextInt(3);
+        for (int i = 0; i < 3; i++) {
+            if (i == dragonPairIndex) appendPair(DRAGONS[i]);
+            else appendClaimOrTiles(PUNG, DRAGONS[i]);
+        }
+        generateClaim();
+        generateClaim();
+    }
+
+    private void generateAllHonors() {
+        for (int i = 0; i < 4; i++) {
+            generateClaim(HONOR_SET);
+        }
+        generatePair(HONOR_SET);
+    }
+
+    private void generateFourConcealedPungs() {
+        for (int i = 0; i < 4; i++) {
+            generateClaimConcealedPungOrKong();
+        }
+        generatePair();
+    }
+
+    private void generatePureTerminalChows() {
+        final char suit = suitRandom.next();
+        appendClaimOrTiles(CHOW, getInstance(1, suit));
+        appendClaimOrTiles(CHOW, getInstance(1, suit));
+        appendClaimOrTiles(CHOW, getInstance(7, suit));
+        appendClaimOrTiles(CHOW, getInstance(7, suit));
+        appendPair(getInstance(5, suit));
+    }
+
     private void generateClaim() {
         // generate a claim or 3 tiles
         generateClaim(ALL_TILE_SET);
@@ -269,45 +310,42 @@ public class MCRHandGenerator {
         generatePair(ALL_TILE_SET);
     }
 
-    private void generateClaim(Set<Tile> range) {
-        // generate a claim or 3 tiles
-        Set<Tile> newRange;
-        Set<Claim.Type> possibleTypes = new HashSet<>(List.of(CHOW, PUNG, KONG));
-        Claim.Type claimType;
-        // try until a possible claim type is found
-        do {
-            final WeightRandom<Claim.Type> claimTypeRandom = getClaimTypeRandom(possibleTypes);
-            claimType = claimTypeRandom.next();
-            newRange = switch (claimType) {
-                // how many tiles are required for each distinct tile in the claim
-                case PUNG -> getUsableTiles(range, 3);
-                case KONG -> getUsableTiles(range, 4);
-                case CHOW -> getUsableTilesForChow(range, 1, 2);
-                case KNITTED_CHOW -> getUsableTilesForChow(range, 3, 6);
-            };
-            if (newRange.isEmpty()) possibleTypes.remove(claimType);
-        } while (newRange.isEmpty());
-        if (possibleTypes.isEmpty()) {
-            throw new IllegalStateException("No possible claim type; current hand: " + getTmpHand());
-        }
-        // append the claim/tiles
-        appendClaimOrTiles(claimType, getRandomTile(newRange));
+    private void generateClaim(Set<Tile> tileRange) {
+        generateClaim(tileRange, RANDOM_CLAIM_TYPES, false);
     }
 
     private void generateClaim(Claim.Type claimType) {
+        generateClaim(ALL_TILE_SET, Set.of(claimType), false);
+    }
+
+    private void generateClaimConcealedPungOrKong() {
+        generateClaim(ALL_TILE_SET, Set.of(PUNG, KONG), true);
+    }
+
+    /**
+     * Generate and append a random CHOW/PUNG/KONG.
+     * Please make sure that claimTypeRange is a subset of RANDOM_CLAIM_TYPES.
+     */
+    private void generateClaim(Set<Tile> tileRange, Set<Claim.Type> claimTypeRange, boolean mustBeConcealed) {
         // generate a claim or 3 tiles
-        final Set<Tile> newRange = switch (claimType) {
-            // how many tiles are required for each distinct tile in the claim
-            case PUNG -> getUsableTiles(ALL_TILE_SET, 3);
-            case KONG -> getUsableTiles(ALL_TILE_SET, 4);
-            case CHOW -> getUsableTilesForChow(ALL_TILE_SET, 1, 2);
-            case KNITTED_CHOW -> getUsableTilesForChow(ALL_TILE_SET, 3, 6);
-        };
-        if (newRange.isEmpty()) {
-            throw new IllegalStateException("No possible claim of type " + claimType + "; current hand: " + getTmpHand());
-        }
+        Set<Tile> newRange;
+        Claim.Type actualClaimType;
+        // try to find a possible claim type
+        final Set<Claim.Type> possibleTypes = new HashSet<>(claimTypeRange);
+        // when this is the last claim and has to be 3 tiles, KONG is forbidden
+        if (lastClaimMustBeTiles()) possibleTypes.remove(KONG);
+        // try to find a possible claim type
+        do {
+            final WeightRandom<Claim.Type> claimTypeRandom = getClaimTypeRandom(possibleTypes);
+            actualClaimType = claimTypeRandom.next();
+            newRange = getUsableTilesByClaimType(tileRange, actualClaimType);
+            possibleTypes.remove(actualClaimType);
+        } while (newRange.isEmpty());
         // append the claim/tiles
-        appendClaimOrTiles(claimType, getRandomTile(newRange));
+        if (mustBeConcealed)
+            appendClaimOrTilesConcealed(actualClaimType, getRandomTile(newRange));
+        else
+            appendClaimOrTiles(actualClaimType, getRandomTile(newRange));
     }
 
     private void generatePair(Set<Tile> range) {
@@ -318,6 +356,16 @@ public class MCRHandGenerator {
     private Tile getRandomTile(Set<Tile> range) {
         final WeightRandom<Tile> tileRandom = new WeightRandom<>(range.toArray(new Tile[0]));
         return tileRandom.next();
+    }
+
+    private Set<Tile> getUsableTilesByClaimType(Set<Tile> range, Claim.Type claimType) {
+        return switch (claimType) {
+            // how many tiles are required for each distinct tile in the claim
+            case PUNG -> getUsableTiles(range, 3);
+            case KONG -> getUsableTiles(range, 4);
+            case CHOW -> getUsableTilesForChow(range, 1, 2);
+            case KNITTED_CHOW -> getUsableTilesForChow(range, 3, 6);
+        };
     }
 
     /**
@@ -359,24 +407,41 @@ public class MCRHandGenerator {
     private void appendClaimOrTiles(Claim.Type type, Tile start) {
         // when this is the last claim to add and the declared tile is null
         // the claim has to be added as 3 tiles
-        appendClaimOrTiles(type, start, effectiveTileCount == 11 && declaredTile == null);
+        if (type == KONG)
+            appendKong(start, false);
+        else
+            appendClaimOrTiles(type, start, lastClaimMustBeTiles());
+    }
+
+    /**
+     * Whether there is only one claim left and the claim must be 3 tiles.
+     */
+    private boolean lastClaimMustBeTiles() {
+        return effectiveTileCount == 11 && declaredTile == null;
     }
 
     private void appendClaimOrTilesConcealed(Claim.Type type, Tile start) {
         // add the triple as a concealed claim (kong only) or 3 concealed tiles
         final Tile declaredTileBefore = declaredTile;
-        appendClaimOrTiles(type, start, true);
+        if (type == KONG)
+            appendKong(start, true);
+        else
+            appendClaimOrTiles(type, start, true);
         // if the claim includes the declared tile, the declared tile should be concealed
         if (declaredTileBefore == null && declaredTile != null) selfDrawn = true;
     }
 
+    /**
+     * Append a CHOW/PUNG as a claim or 3 tiles.
+     * This is not applicable to KONGs.
+     * For KONGs, use appendKong.
+     */
     private void appendClaimOrTiles(Claim.Type type, Tile start, boolean mustBeTiles) {
         // add a claim or 3 tiles
         final Claim tmpClaim = new Claim(type, start, 0, 0);
         // kong must be a claim
         if (type == KONG) {
-            appendClaim(type, start, mustBeTiles);
-            return;
+            throw new IllegalArgumentException("This method is not applicable to KONGs");
         }
         // knitted chow must not be a claim
         // claims other than kongs must not be concealed
@@ -389,6 +454,10 @@ public class MCRHandGenerator {
                 appendTile(tile);
             }
         }
+    }
+
+    private void appendKong(Tile start, boolean mustBeConcealed) {
+        appendClaim(KONG, start, mustBeConcealed);
     }
 
     private void appendPair(Tile tile) {
@@ -419,7 +488,8 @@ public class MCRHandGenerator {
 
     private void appendTile(Tile tile) {
         if (declaredTile == null && (effectiveTileCount == 13 || simpleRandom.nextInt(4) == 0)) {
-            // declared tile
+            // 1/4 chance for declared tile
+            // or the last tile must be the declared tile
             appendDeclaredTile(tile);
         } else {
             // non-declared tile
@@ -479,7 +549,8 @@ public class MCRHandGenerator {
                 case KNITTED_CHOW -> 1;
             };
         }
-        return new WeightRandom<>(typeArray, weights);
+        // in debug mode, the weights of all claim types are the same
+        return debugMode ? new WeightRandom<>(typeArray) : new WeightRandom<>(typeArray, weights);
     }
 
     private MCRHand getTmpHand() {
