@@ -6,6 +6,7 @@ import net.hidme.mahjong.core.data.*;
 
 import java.util.*;
 
+import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_LEFT;
 import static net.hidme.mahjong.core.data.Claim.Type.*;
 import static net.hidme.mahjong.core.data.MCRFan.*;
 import static net.hidme.mahjong.core.data.Tile.*;
@@ -131,11 +132,11 @@ public class MCRHandGenerator {
             case ALL_HONORS -> generateAllHonors();
             case FOUR_CONCEALED_PUNGS -> generateFourConcealedPungs();
             case PURE_TERMINAL_CHOWS -> generatePureTerminalChows();
-            case QUADRUPLE_CHOW -> generateBigFourWinds();
-            case FOUR_PURE_SHIFTED_PUNGS -> generateBigFourWinds();
-            case FOUR_PURE_SHIFTED_CHOWS -> generateBigFourWinds();
-            case THREE_KONGS -> generateBigFourWinds();
-            case ALL_TERMINALS_AND_HONORS -> generateBigFourWinds();
+            case QUADRUPLE_CHOW -> generateQuadrupleChow();
+            case FOUR_PURE_SHIFTED_PUNGS -> generateFourPureShiftedPungs();
+            case FOUR_PURE_SHIFTED_CHOWS -> generateFourPureShiftedChows();
+            case THREE_KONGS -> generateThreeKongs();
+            case ALL_TERMINALS_AND_HONORS -> generateAllTerminalsAndHonors();
             case SEVEN_PAIRS -> generateBigFourWinds();
             case GREATER_HONORS_AND_KNITTED_TILES -> generateBigFourWinds();
             case ALL_EVEN_PUNGS -> generateBigFourWinds();
@@ -300,6 +301,49 @@ public class MCRHandGenerator {
         appendPair(getInstance(5, suit));
     }
 
+    private void generateQuadrupleChow() {
+        final int number = simpleRandom.nextInt(1, 8);
+        final char suit = suitRandom.next();
+        for (int i = 0; i < 4; i++) {
+            appendClaimOrTiles(CHOW, getInstance(number, suit));
+        }
+        generatePair();
+    }
+
+    private void generateFourPureShiftedPungs() {
+        final int number = simpleRandom.nextInt(1, 7);
+        final char suit = suitRandom.next();
+        for (int i = 0; i < 4; i++) {
+            appendPungKongOrTiles(getInstance(number + i, suit));
+        }
+        generatePair();
+    }
+
+    private void generateFourPureShiftedChows() {
+        final int diff = simpleRandom.nextInt(1, 3);
+        final int number = simpleRandom.nextInt(1, 8 - 3 * diff);
+        final char suit = suitRandom.next();
+        for (int i = 0; i < 4; i++) {
+            appendClaimOrTiles(CHOW, getInstance(number + i * diff, suit));
+        }
+        generatePair();
+    }
+
+    private void generateThreeKongs() {
+        for (int i = 0; i < 3; i++) {
+            generateClaim(KONG);
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateAllTerminalsAndHonors() {
+        for (int i = 0; i < 4; i++) {
+            generateClaim(ORPHAN_SET);
+        }
+        generatePair(ORPHAN_SET);
+    }
+
     private void generateClaim() {
         // generate a claim or 3 tiles
         generateClaim(ALL_TILE_SET);
@@ -402,6 +446,10 @@ public class MCRHandGenerator {
                 tiles.add(tile);
         }
         return tiles;
+    }
+
+    private void appendPungKongOrTiles(Tile start) {
+        appendClaimOrTiles(getClaimTypeRandom(Set.of(PUNG, KONG)).next(), start);
     }
 
     private void appendClaimOrTiles(Claim.Type type, Tile start) {
@@ -561,8 +609,10 @@ public class MCRHandGenerator {
         System.out.println(claims);
         System.out.println(tiles);
         System.out.println(declaredTile);
-        return new MCRHand(new Tile[0], claims.toArray(new Claim[0]), tiles.toArray(new Tile[0]), declaredTile,
+        final MCRHand hand = new MCRHand(new Tile[0], claims.toArray(new Claim[0]), tiles.toArray(new Tile[0]), declaredTile,
                 selfDrawn, lastTile, lastDrawOrClaim, kong, prevalentWind, seatWind);
+        hand.sort();
+        return hand;
     }
 
 }
