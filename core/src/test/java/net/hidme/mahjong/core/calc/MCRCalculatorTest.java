@@ -1,12 +1,18 @@
 package net.hidme.mahjong.core.calc;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import net.hidme.mahjong.core.data.Hand;
+import net.hidme.mahjong.core.data.MCRFan;
 import net.hidme.mahjong.core.data.MCRHandParser;
 import net.hidme.mahjong.core.data.MCRResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
+import java.util.Map;
+
+import static net.hidme.mahjong.core.data.MCRFan.*;
 
 public class MCRCalculatorTest {
 
@@ -614,6 +620,11 @@ public class MCRCalculatorTest {
         testSingleCase(";9999s0,123p1,123s1;77798p;E,S,0,0,0,0", 7);
         testSingleCase(";FFF1,234p0;234mNPPPN;E,S,0,0,0,0", 9);
         testSingleCase(";9999s0,123s1,123s1,123s1;44s;E,S,0,0,0,0", 52);
+        // specific type of unique wait
+        testSingleCase(";456s0,567s2,678s0;22354s;E,S,0,0,0,0", CLOSED_WAIT);
+        testSingleCase(";456s0,567s2,678s0;12883s;E,S,0,0,0,0", EDGE_WAIT);
+        testSingleCase(";456s0,567s2,678s0;11897s;E,S,0,0,0,0", EDGE_WAIT);
+        testSingleCase(";456s0,567s2,678s0;12355s;E,S,0,0,0,0", SINGLE_WAIT);
     }
 
     @Test
@@ -633,6 +644,25 @@ public class MCRCalculatorTest {
         final MCRCalculator calculator = new MCRCalculator();
         MCRResult result = (MCRResult) calculator.calculate(hand);
         Assertions.assertEquals(expected, result.getFanTotal());
+    }
+
+    private void testSingleCase(String cas, MCRFan fanToContain) throws ParseException {
+        final Multiset<MCRFan> expected = HashMultiset.create();
+        expected.add(fanToContain);
+        testSingleCase(cas, expected);
+    }
+
+    private void testSingleCase(String cas, Multiset<MCRFan> expectedToContain) throws ParseException {
+        final MCRHandParser parser = new MCRHandParser();
+        final Hand hand = parser.parse(cas);
+        final MCRCalculator calculator = new MCRCalculator();
+        MCRResult result = (MCRResult) calculator.calculate(hand);
+        final Map<MCRFan, Integer> fans = result.getFanCombination();
+        for (Multiset.Entry<MCRFan> entry : expectedToContain.entrySet()) {
+            final MCRFan fan = entry.getElement();
+            final int count = entry.getCount();
+            Assertions.assertTrue(fans.containsKey(fan) && fans.get(fan) == count);
+        }
     }
 
 }

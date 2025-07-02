@@ -438,7 +438,7 @@ public class MCRHandGenerator {
      */
     private void appendClaimOrTiles(Claim.Type type, Tile start, boolean mustBeTiles) {
         // add a claim or 3 tiles
-        final Claim tmpClaim = new Claim(type, start, 0, 0);
+        final Claim tmpClaim = Claim.create(type, start, 0, 0);
         // kong must be a claim
         if (type == KONG) {
             throw new IllegalArgumentException("This method is not applicable to KONGs");
@@ -468,18 +468,18 @@ public class MCRHandGenerator {
     private void appendClaim(Claim.Type type, Tile start, boolean mustBeConcealed) {
         switch (type) {
             case CHOW -> {
-                claims.add(new Claim(type, start, simpleRandom.nextInt(3), 3));
+                claims.add(Claim.create(type, start, simpleRandom.nextInt(3), CLAIMED_FROM_LEFT));
                 usedTiles.add(start);
                 usedTiles.add(start.shift(1));
                 usedTiles.add(start.shift(2));
             }
             case PUNG -> {
-                claims.add(new Claim(type, start, 0, simpleRandom.nextInt(1, 4)));
+                claims.add(Claim.create(type, start, 0, simpleRandom.nextInt(1, 4)));
                 usedTiles.add(start, 3);
             }
             case KONG -> {
                 // mustBeConcealed only works for KONG
-                claims.add(new Claim(type, start, 0, mustBeConcealed ? 0 : simpleRandom.nextInt(0, 4)));
+                claims.add(Claim.create(type, start, 0, mustBeConcealed ? 0 : simpleRandom.nextInt(0, 4)));
                 usedTiles.add(start, 4);
             }
         }

@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_SELF;
 import static net.hidme.mahjong.core.data.Claim.Type.*;
 import static net.hidme.mahjong.core.data.MCRFan.*;
 import static net.hidme.mahjong.core.data.Tile.*;
@@ -122,8 +123,9 @@ public class MCRTotalFanCalc {
         final Tile declaredTile = hand.declaredTile;
         // classify unique wait
         for (Claim claim : normalStruct.claims) {
-            if (claim.type() != CHOW) continue;
-            if (!Set.of(claim.getTiles()).contains(declaredTile)) continue;
+            // only check the declared claim
+            // the declared claim with unique wait must be a chow
+            if (claim.type() != CHOW || !claim.isDeclared()) continue;
             final int pos = declaredTile.number - claim.start().number;
             if (pos == 0 || pos == 2) {
                 result.addFan(EDGE_WAIT);
@@ -235,7 +237,7 @@ public class MCRTotalFanCalc {
     private void checkMeldedHand() {
         if (hand.claims.length == 4 && !hand.selfDrawn) {
             for (Claim claim : hand.claims) {
-                if (claim.claimedFrom() == 0) return;
+                if (claim.claimedFrom() == CLAIMED_FROM_SELF) return;
             }
             result.addFan(MELDED_HAND);
         }
@@ -469,7 +471,7 @@ public class MCRTotalFanCalc {
         if (claims.size() != 1) return;
         // check the count of concealed kongs
         final Claim claim = claims.getFirst();
-        if ((claim.claimedFrom() == 0 ? 1 : 0) == concealedCount) {
+        if ((claim.claimedFrom() == CLAIMED_FROM_SELF ? 1 : 0) == concealedCount) {
             result.addFan(FAN_ONE_KONG[concealedCount]);
         }
     }
@@ -486,7 +488,7 @@ public class MCRTotalFanCalc {
         }
         // check the count of concealed kongs
         if (Stream.of(normalStruct.claims)
-                .filter(c -> c.type() == KONG && c.claimedFrom() == 0)
+                .filter(c -> c.type() == KONG && c.claimedFrom() == CLAIMED_FROM_SELF)
                 .count() == concealedCount) {
             result.addFan(FAN_TWO_KONGS[concealedCount]);
         }
@@ -506,7 +508,7 @@ public class MCRTotalFanCalc {
     private void checkConcealedPungs(int pungCount) {
         if (!(structure instanceof NormalHandStructure normalStruct)) return;
         if (Stream.of(normalStruct.claims)
-                .filter(c -> c.type().isPung() && c.claimedFrom() == 0)
+                .filter(c -> c.type().isPung() && c.claimedFrom() == CLAIMED_FROM_SELF)
                 .count() == pungCount) {
             result.addFan(FAN_CONCEALED_PUNGS[pungCount]);
         }

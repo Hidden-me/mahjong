@@ -13,7 +13,8 @@ import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
 public record Claim(Type type,  // chow/pung/kong
                     Tile start,  // the smallest tile in a chow, or the tile in a pung/kong
                     int claimedIndex,  // the index of the claimed tile (0/1/2, 1/2 for chow only)
-                    int claimedFrom  // 0 for self, 1 for right, 2 for opposite, 3 for left
+                    int claimedFrom,  // 0 for self, 1 for right, 2 for opposite, 3 for left
+                    boolean isDeclared  // whether the claim is made upon declaration
 ) {
     public enum Type {
         CHOW, PUNG, KONG, KNITTED_CHOW;
@@ -21,6 +22,26 @@ public record Claim(Type type,  // chow/pung/kong
         public boolean isPung() {
             return this == PUNG || this == KONG;
         }
+    }
+
+    public static final int CLAIMED_FROM_SELF = 0;
+    public static final int CLAIMED_FROM_RIGHT = 1;
+    public static final int CLAIMED_FROM_OPPOSITE = 2;
+    public static final int CLAIMED_FROM_LEFT = 3;
+    /**
+     * Claimed from some other player.
+     * Only use it when the claim source is really unknown
+     * (e.g. when the hand is randomly generated, the claim happens upon declaration,
+     * and the claim source is unknown).
+     */
+    public static final int CLAIMED_FROM_OTHER = 4;
+
+    public static Claim create(Type type, Tile start, int claimedIndex, int claimedFrom) {
+        return new Claim(type, start, claimedIndex, claimedFrom, false);
+    }
+
+    public static Claim create(Type type, Tile start, int claimedIndex, int claimedFrom, boolean isDeclared) {
+        return new Claim(type, start, claimedIndex, claimedFrom, isDeclared);
     }
 
     public static Type getType(Collection<Tile> tiles) {

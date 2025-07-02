@@ -103,7 +103,7 @@ public class MCRHandParser {
         final int claimedFrom = type == Claim.Type.CHOW ? 3 : index;
         if (claimedIndex < 0 || claimedIndex > 2 || claimedFrom < 0 || claimedFrom > 3)
             throw new ParseException("invalid claim", -1);
-        return new Claim(type, startTile, claimedIndex, claimedFrom);
+        return Claim.create(type, startTile, claimedIndex, claimedFrom);
     }
 
     private List<Tile> parseTiles(String string) throws ParseException {

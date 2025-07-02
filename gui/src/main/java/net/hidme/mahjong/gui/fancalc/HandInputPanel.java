@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Enumeration;
 
+import static net.hidme.mahjong.core.data.Claim.*;
 import static net.hidme.mahjong.gui.text.Localization.*;
 import static net.hidme.mahjong.gui.util.GridBagLayoutUtils.makeConstraint;
 
@@ -102,12 +103,12 @@ public class HandInputPanel extends JPanel {
                         case CMD_CHOW -> {
                             if (tile.isNumber()) {
                                 final Tile startTile = tile.number <= 7 ? tile : Tile.getInstance(7, tile.suit);
-                                hand.addClaim(new Claim(Claim.Type.CHOW, startTile, 0, 3));
+                                hand.addClaim(Claim.create(Claim.Type.CHOW, startTile, 0, CLAIMED_FROM_LEFT));
                             }
                         }
-                        case CMD_PUNG -> hand.addClaim(new Claim(Claim.Type.PUNG, tile, 0, 2));
-                        case CMD_MELDED_KONG -> hand.addClaim(new Claim(Claim.Type.KONG, tile, 0, 2));
-                        case CMD_CONCEALED_KONG -> hand.addClaim(new Claim(Claim.Type.KONG, tile, 0, 0));
+                        case CMD_PUNG -> hand.addClaim(Claim.create(Claim.Type.PUNG, tile, 0, CLAIMED_FROM_OPPOSITE));
+                        case CMD_MELDED_KONG -> hand.addClaim(Claim.create(Claim.Type.KONG, tile, 0, CLAIMED_FROM_OPPOSITE));
+                        case CMD_CONCEALED_KONG -> hand.addClaim(Claim.create(Claim.Type.KONG, tile, 0, CLAIMED_FROM_SELF));
                     }
                 }
             }

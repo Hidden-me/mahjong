@@ -6,6 +6,7 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static net.hidme.mahjong.core.data.Tile.isNumberSuit;
@@ -111,6 +112,11 @@ public abstract class Hand {
             if (claim.claimedFrom() != 0) return false;
         }
         return true;
+    }
+
+    public void sort() {
+        // sort tiles
+        Arrays.sort(tiles);
     }
 
     // each tile is finite

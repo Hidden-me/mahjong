@@ -7,6 +7,9 @@ import net.hidme.mahjong.core.data.Tile;
 
 import java.util.*;
 
+import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_OTHER;
+import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_SELF;
+
 public class MCRStructureAnalyzer {
 
     public List<HandStructure> getPossibleStructures(MCRHand hand) {
@@ -15,29 +18,31 @@ public class MCRStructureAnalyzer {
         addPairStructure(hand, structures);
         addOrphanStructure(hand, structures);
         addHonorKnittedStructure(hand, structures);
-        if (!hand.selfDrawn)
-            setSourceOfDeclaredTile(structures, hand.declaredTile);
+        setDeclaredClaim(structures, hand.declaredTile, hand.selfDrawn);
         return structures;
     }
 
-    // assign claimedFrom of the declared claim if not self-drawn
-    private void setSourceOfDeclaredTile(List<HandStructure> structures, Tile declaredTile) {
+    // assign attributes of the declared claim
+    private void setDeclaredClaim(List<HandStructure> structures, Tile declaredTile, boolean selfDrawn) {
         final List<HandStructure> oldStructures = new ArrayList<>(structures);
         for (HandStructure structure : oldStructures) {
             if (structure instanceof NormalHandStructure normalStruct) {
                 boolean added = false;
+                // multiple claims may contain the declared tile
+                // giving the declared tile to different claims leads to different hand structures
                 for (int i = 0, bound = normalStruct.claims.length; i < bound; i++) {
                     final Claim claim = normalStruct.claims[i];
-                    if (claim.claimedFrom() == 0 && claim.getTileSet().contains(declaredTile)) {
+                    if (claim.claimedFrom() == CLAIMED_FROM_SELF && claim.getTileSet().contains(declaredTile)) {
                         // Notes:
                         // Such a claim must be in hand.
                         // A concealed kong must not contain the declared tile,
                         // since it must use up all 4 tiles.
                         final NormalHandStructure newStruct = new NormalHandStructure(normalStruct);
-                        newStruct.claims[i] = new Claim(newStruct.claims[i].type(),
+                        newStruct.claims[i] = Claim.create(newStruct.claims[i].type(),
                                 newStruct.claims[i].start(),
-                                newStruct.claims[i].claimedIndex(),
-                                1);
+                                Arrays.binarySearch(claim.getTiles(), declaredTile),
+                                selfDrawn ? CLAIMED_FROM_SELF : CLAIMED_FROM_OTHER,
+                                true);
                         structures.add(newStruct);
                         added = true;
                     }
@@ -106,7 +111,7 @@ public class MCRStructureAnalyzer {
             final Claim[] claims = new Claim[3];
             int i = 0;
             for (char suit : suits) {
-                claims[i] = new Claim(Claim.Type.KNITTED_CHOW, Tile.getInstance(i + 1, suit), 0, 0);
+                claims[i] = Claim.create(Claim.Type.KNITTED_CHOW, Tile.getInstance(i + 1, suit), 0, CLAIMED_FROM_SELF);
                 i++;
             }
             structures.add(new NormalHandStructure(claims, null));
@@ -201,7 +206,7 @@ public class MCRStructureAnalyzer {
         final int firstCount = firstEntry.getCount();
         if (firstCount >= 3) {
             // try pung
-            claims.add(new Claim(Claim.Type.PUNG, firstTile, 0, 0));
+            claims.add(Claim.create(Claim.Type.PUNG, firstTile, 0, CLAIMED_FROM_SELF));
             tiles.remove(firstTile, 3);
             getNumberSuitStructureRecursive(tiles, allowsPair, claims, pair, structures);
             claims.removeLast();
@@ -223,7 +228,7 @@ public class MCRStructureAnalyzer {
         if (chowCount < firstCount) return;
         // all the first tiles can form chows
         for (int i = 0; i < chowCount; i++) {
-            claims.add(new Claim(Claim.Type.CHOW, firstTile, 0, 0));
+            claims.add(Claim.create(Claim.Type.CHOW, firstTile, 0, CLAIMED_FROM_SELF));
         }
         tiles.remove(firstTile, chowCount);
         tiles.remove(firstTile.next(), chowCount);
@@ -243,7 +248,7 @@ public class MCRStructureAnalyzer {
         for (Multiset.Entry<Tile> entry : tiles.entrySet()) {
             final int count = entry.getCount();
             if (count == 3) {
-                claims.add(new Claim(Claim.Type.PUNG, entry.getElement(), 0, 0));
+                claims.add(Claim.create(Claim.Type.PUNG, entry.getElement(), 0, CLAIMED_FROM_SELF));
             } else if (count == 2 && allowsPair && pair == null) {
                 pair = entry.getElement();
             } else return null;
