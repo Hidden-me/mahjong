@@ -165,7 +165,7 @@ public class MCRSetFanCalc {
                 (c1, c2) -> {
                     if (c1.type().isPung() && c2.type().isPung()) {
                         final Tile t1 = c1.start(), t2 = c2.start();
-                        if (t1.isHonor() || t2.isHonor()) return false;
+                        if (!t1.isNumber() || !t2.isNumber()) return false;
                         return t1.number == t2.number;
                     }
                     return false;
@@ -247,6 +247,9 @@ public class MCRSetFanCalc {
         checkAddThreeSets(
                 claims -> {
                     if (claims.stream().anyMatch(c -> !c.type().isPung()))
+                        return null;
+                    // only number pungs are considered
+                    if (!isOfNumberSuits(claims))
                         return null;
                     if (claims.stream().map(c -> c.start().suit)
                             .collect(Collectors.toSet())
@@ -335,6 +338,9 @@ public class MCRSetFanCalc {
     private void checkTriplePung() {
         checkAddThreeSets(
                 claims -> {
+                    // only number pungs are considered
+                    if (!isOfNumberSuits(claims))
+                        return null;
                     final int start = claims.getFirst().start().number;
                     if (claims.stream().allMatch(c -> c.type().isPung() && c.start().number == start))
                         return claims;
@@ -485,6 +491,10 @@ public class MCRSetFanCalc {
 
     private static boolean isOfPureNumberSuit(List<SuppressedClaim> claims) {
         return Claim.isOfPureNumberSuit(claims.stream().map(SuppressedClaim::claim).toList());
+    }
+
+    private static boolean isOfNumberSuits(List<SuppressedClaim> claims) {
+        return claims.stream().allMatch(c -> Tile.isNumberSuit(c.start().suit));
     }
 
     private void checkSingleSetFan(Predicate<SuppressedClaim> target, MCRFan fan) {

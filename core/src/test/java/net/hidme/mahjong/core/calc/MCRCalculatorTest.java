@@ -234,6 +234,7 @@ public class MCRCalculatorTest {
         testSingleCase(";2222s0,3333s0,6666p0;444m99s;E,E,0,0,0,0", 98);
         testSingleCase(";2222s0,3333s0,6666p0;44m99s4m;E,E,0,0,0,0", 57);
         testSingleCase(";2222s0,3333s0,6666p0;44m99s4m;E,E,1,0,0,0", 98);
+        testSingleCase(";2222s1,3333m1,PPPP1;6p555s6p;E,E,0,0,0,0", 41);
     }
 
     @Test
