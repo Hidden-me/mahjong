@@ -3,6 +3,7 @@ package net.hidme.mahjong.core.quiz;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
+import net.hidme.mahjong.core.util.WeightRandom;
 
 import java.util.*;
 
@@ -39,7 +40,8 @@ public class MCRHandGenerator {
     private static final MCRFan[] FANS;
     private static final int[] FAN_WEIGHTS;
     private static final Tile[] ORPHANS, WINDS, DRAGONS;
-    private static final Set<Tile> TERMINAL_SET, HONOR_SET, ORPHAN_SET;
+    private static final Set<Tile>[] SUIT_TILE_SETS;
+    private static final Set<Tile> TERMINAL_SET, HONOR_SET, ORPHAN_SET, EVEN_SET;
     private static final Set<Claim.Type> RANDOM_CLAIM_TYPES;
 
     static {
@@ -60,9 +62,15 @@ public class MCRHandGenerator {
         ORPHANS = new Tile[]{M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P};
         WINDS = new Tile[]{E, S, W, N};
         DRAGONS = new Tile[]{C, F, P};
+        SUIT_TILE_SETS = new Set[]{
+                Set.of(M1, M2, M3, M4, M5, M6, M7, M8, M9),
+                Set.of(S1, S2, S3, S4, S5, S6, S7, S8, S9),
+                Set.of(P1, P2, P3, P4, P5, P6, P7, P8, P9)
+        };
         TERMINAL_SET = Set.of(M1, M9, P1, P9, S1, S9);
         HONOR_SET = Set.of(E, S, W, N, C, F, P);
         ORPHAN_SET = Set.of(M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P);
+        EVEN_SET = Set.of(M2, M4, M6, M8, P2, P4, P6, P8, S2, S4, S6, S8);
         RANDOM_CLAIM_TYPES = Set.of(CHOW, PUNG, KONG);
     }
 
@@ -137,15 +145,15 @@ public class MCRHandGenerator {
             case FOUR_PURE_SHIFTED_CHOWS -> generateFourPureShiftedChows();
             case THREE_KONGS -> generateThreeKongs();
             case ALL_TERMINALS_AND_HONORS -> generateAllTerminalsAndHonors();
-            case SEVEN_PAIRS -> generateBigFourWinds();
-            case GREATER_HONORS_AND_KNITTED_TILES -> generateBigFourWinds();
-            case ALL_EVEN_PUNGS -> generateBigFourWinds();
-            case FULL_FLUSH -> generateBigFourWinds();
-            case PURE_TRIPLE_CHOW -> generateBigFourWinds();
-            case PURE_SHIFTED_PUNGS -> generateBigFourWinds();
-            case UPPER_TILES -> generateBigFourWinds();
-            case MIDDLE_TILES -> generateBigFourWinds();
-            case LOWER_TILES -> generateBigFourWinds();
+            case SEVEN_PAIRS -> generateSevenPairs();
+            case GREATER_HONORS_AND_KNITTED_TILES -> generateGreaterHonorsAndKnittedTiles();
+            case ALL_EVEN_PUNGS -> generateAllEvenPungs();
+            case FULL_FLUSH -> generateFullFlush();
+            case PURE_TRIPLE_CHOW -> generatePureTripleChow();
+            case PURE_SHIFTED_PUNGS -> generatePureShiftedPungs();
+            case UPPER_TILES -> generateUpperTiles();
+            case MIDDLE_TILES -> generateMiddleTiles();
+            case LOWER_TILES -> generateLowerTiles();
             case PURE_STRAIGHT -> generateBigFourWinds();
             case THREE_SUITED_TERMINAL_CHOWS -> generateBigFourWinds();
             case PURE_SHIFTED_CHOWS -> generateBigFourWinds();
@@ -287,7 +295,7 @@ public class MCRHandGenerator {
 
     private void generateFourConcealedPungs() {
         for (int i = 0; i < 4; i++) {
-            generateClaimConcealedPungOrKong();
+            generateConcealedPungOrKong();
         }
         generatePair();
     }
@@ -344,6 +352,94 @@ public class MCRHandGenerator {
         generatePair(ORPHAN_SET);
     }
 
+    private void generateSevenPairs() {
+        for (int i = 0; i < 7; i++) {
+            generatePair();
+        }
+    }
+
+    private void generateGreaterHonorsAndKnittedTiles() {
+        for (Tile tile : HONOR_SET) {
+            appendTile(tile);
+        }
+        // shuffle the suits for knitted tiles
+        final List<Character> suits = new ArrayList<>(List.of('m', 'p', 's'));
+        Collections.shuffle(suits);
+        // pick 2 tiles absent in the hand
+        final int absent1 = simpleRandom.nextInt(1, 10);
+        int absent2;
+        do {
+            absent2 = simpleRandom.nextInt(1, 10);
+        } while (absent1 == absent2);
+        // add the 7 tiles left to the hand
+        for (int i = 1; i <= 9; i++) {
+            if (i == absent1 || i == absent2) continue;
+            appendTile(getInstance(i, suits.get(i % 3)));
+        }
+    }
+
+    private void generateAllEvenPungs() {
+        for (int i = 0; i < 4; i++) {
+            generatePungOrKong(EVEN_SET);
+        }
+        generatePair(EVEN_SET);
+    }
+
+    private void generateFullFlush() {
+        final Set<Tile> tileRange = getRandomSuitTileSet();
+        for (int i = 0; i < 4; i++) {
+            generateClaim(tileRange);
+        }
+        generatePair(tileRange);
+    }
+
+    private void generatePureTripleChow() {
+        final char suit = suitRandom.next();
+        final int number = simpleRandom.nextInt(1, 8);
+        for (int i = 0; i < 3; i++) {
+            appendClaimOrTiles(CHOW, getInstance(number, suit));
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generatePureShiftedPungs() {
+        final char suit = suitRandom.next();
+        final int number = simpleRandom.nextInt(1, 8);
+        for (int i = 0; i < 3; i++) {
+            appendPungKongOrTiles(getInstance(number + i, suit));
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateUpperTiles() {
+        generateNumberHand(7, 9);
+    }
+
+    private void generateMiddleTiles() {
+        generateNumberHand(4, 6);
+    }
+
+    private void generateLowerTiles() {
+        generateNumberHand(1, 3);
+    }
+
+    // utilities
+
+    private void generateNumberHand(int min, int max) {
+        final Set<Tile> tileRange = new HashSet<>();
+        for (int i = min; i <= max; i++) {
+            tileRange.add(getInstance(i, 'm'));
+            tileRange.add(getInstance(i, 'p'));
+            tileRange.add(getInstance(i, 's'));
+        }
+        for (int i = 0; i < 4; i++) {
+            generateClaim(tileRange);
+        }
+        generatePair(tileRange);
+    }
+
     private void generateClaim() {
         // generate a claim or 3 tiles
         generateClaim(ALL_TILE_SET);
@@ -362,7 +458,11 @@ public class MCRHandGenerator {
         generateClaim(ALL_TILE_SET, Set.of(claimType), false);
     }
 
-    private void generateClaimConcealedPungOrKong() {
+    private void generatePungOrKong(Set<Tile> tileRange) {
+        generateClaim(tileRange, Set.of(PUNG, KONG), false);
+    }
+
+    private void generateConcealedPungOrKong() {
         generateClaim(ALL_TILE_SET, Set.of(PUNG, KONG), true);
     }
 
@@ -599,6 +699,11 @@ public class MCRHandGenerator {
         }
         // in debug mode, the weights of all claim types are the same
         return debugMode ? new WeightRandom<>(typeArray) : new WeightRandom<>(typeArray, weights);
+    }
+
+    private Set<Tile> getRandomSuitTileSet() {
+        final int suitIndex = simpleRandom.nextInt(3);
+        return SUIT_TILE_SETS[suitIndex];
     }
 
     private MCRHand getTmpHand() {
