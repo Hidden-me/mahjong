@@ -3,6 +3,7 @@ package net.hidme.mahjong.core.quiz;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
+import net.hidme.mahjong.core.util.PoolRandom;
 import net.hidme.mahjong.core.util.WeightRandom;
 
 import java.util.*;
@@ -164,11 +165,11 @@ public class MCRHandGenerator {
             case ALL_FIVE -> generateAllFive();
             case TRIPLE_PUNG -> generateTriplePung();
             case THREE_CONCEALED_PUNGS -> generateThreeConcealedPungs();
-            case LESSER_HONORS_AND_KNITTED_TILES -> generateBigFourWinds();
-            case KNITTED_STRAIGHT -> generateBigFourWinds();
-            case UPPER_FOUR -> generateBigFourWinds();
-            case LOWER_FOUR -> generateBigFourWinds();
-            case BIG_THREE_WINDS -> generateBigFourWinds();
+            case LESSER_HONORS_AND_KNITTED_TILES -> generateLesserHonorsAndKnittedTiles();
+            case KNITTED_STRAIGHT -> generateKnittedStraight();
+            case UPPER_FOUR -> generateUpperFour();
+            case LOWER_FOUR -> generateLowerFour();
+            case BIG_THREE_WINDS -> generateBigThreeWinds();
             case MIXED_STRAIGHT -> generateBigFourWinds();
             case REVERSIBLE_TILES -> generateBigFourWinds();
             case MIXED_TRIPLE_CHOW -> generateBigFourWinds();
@@ -200,17 +201,17 @@ public class MCRHandGenerator {
     }
 
     private void generateBigFourWinds() {
-        appendClaimOrTiles(PUNG, E);
-        appendClaimOrTiles(PUNG, S);
-        appendClaimOrTiles(PUNG, W);
-        appendClaimOrTiles(PUNG, N);
+        appendPungKongOrTiles(E);
+        appendPungKongOrTiles(S);
+        appendPungKongOrTiles(W);
+        appendPungKongOrTiles(N);
         generatePair();
     }
 
     private void generateBigThreeDragons() {
-        appendClaimOrTiles(PUNG, C);
-        appendClaimOrTiles(PUNG, F);
-        appendClaimOrTiles(PUNG, P);
+        appendPungKongOrTiles(C);
+        appendPungKongOrTiles(F);
+        appendPungKongOrTiles(P);
         generateClaim();
         generatePair();
     }
@@ -275,7 +276,7 @@ public class MCRHandGenerator {
         final int windPairIndex = simpleRandom.nextInt(4);
         for (int i = 0; i < 4; i++) {
             if (i == windPairIndex) appendPair(WINDS[i]);
-            else appendClaimOrTiles(PUNG, WINDS[i]);
+            else appendPungKongOrTiles(WINDS[i]);
         }
         generateClaim();
     }
@@ -284,7 +285,7 @@ public class MCRHandGenerator {
         final int dragonPairIndex = simpleRandom.nextInt(3);
         for (int i = 0; i < 3; i++) {
             if (i == dragonPairIndex) appendPair(DRAGONS[i]);
-            else appendClaimOrTiles(PUNG, DRAGONS[i]);
+            else appendPungKongOrTiles(DRAGONS[i]);
         }
         generateClaim();
         generateClaim();
@@ -484,6 +485,49 @@ public class MCRHandGenerator {
     private void generateThreeConcealedPungs() {
         for (int i = 0; i < 3; i++) {
             generateConcealedPungOrKong();
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateLesserHonorsAndKnittedTiles() {
+        // get the pool of honors and knitted tiles
+        final Set<Tile> tileRange = new HashSet<>(HONOR_SET);
+        final List<Character> suits = getShuffledSuits();
+        for (int i = 1; i <= 9; i++) {
+            tileRange.add(getInstance(i, suits.get(i % 3)));
+        }
+        final PoolRandom<Tile> tilePool = new PoolRandom<>(tileRange);
+        // randomly pick tiles from the pool
+        for (int i = 0; i < 14; i++) {
+            appendTile(tilePool.next());
+        }
+    }
+
+    private void generateKnittedStraight() {
+        // add knitted tiles
+        final List<Character> suits = getShuffledSuits();
+        for (int i = 1; i <= 9; i++) {
+            appendTile(getInstance(i, suits.get(i % 3)));
+        }
+        // generate other tiles
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateUpperFour() {
+        generateNumberHand(6, 9);
+    }
+
+    private void generateLowerFour() {
+        generateNumberHand(1, 4);
+    }
+
+    private void generateBigThreeWinds() {
+        final int skipIndex = simpleRandom.nextInt(4);
+        for (int i = 0; i < 4; i++) {
+            if (i == skipIndex) continue;
+            appendPungKongOrTiles(WINDS[i]);
         }
         generateClaim();
         generatePair();
