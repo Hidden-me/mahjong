@@ -93,6 +93,10 @@ public record Claim(Type type,  // chow/pung/kong
         }
     }
 
+    public boolean isConcealed() {
+        return claimedFrom == CLAIMED_FROM_SELF;
+    }
+
     public int size() {
         return type == Type.KONG ? 4 : 3;
     }

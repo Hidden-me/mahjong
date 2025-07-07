@@ -32,7 +32,7 @@ public class MCRStructureAnalyzer {
                 // giving the declared tile to different claims leads to different hand structures
                 for (int i = 0, bound = normalStruct.claims.length; i < bound; i++) {
                     final Claim claim = normalStruct.claims[i];
-                    if (claim.claimedFrom() == CLAIMED_FROM_SELF && claim.getTileSet().contains(declaredTile)) {
+                    if (claim.isConcealed() && claim.getTileSet().contains(declaredTile)) {
                         // Notes:
                         // Such a claim must be in hand.
                         // A concealed kong must not contain the declared tile,

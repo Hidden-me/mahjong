@@ -1,5 +1,6 @@
 package net.hidme.mahjong.core.quiz;
 
+import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import net.hidme.mahjong.core.data.*;
@@ -8,10 +9,11 @@ import net.hidme.mahjong.core.util.WeightRandom;
 
 import java.util.*;
 
-import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_LEFT;
+import static net.hidme.mahjong.core.data.Claim.*;
 import static net.hidme.mahjong.core.data.Claim.Type.*;
 import static net.hidme.mahjong.core.data.MCRFan.*;
 import static net.hidme.mahjong.core.data.Tile.*;
+import static net.hidme.mahjong.core.util.CollectionUtils.intersect;
 
 public class MCRHandGenerator {
 
@@ -19,7 +21,7 @@ public class MCRHandGenerator {
         fanRandom = new WeightRandom<>(FANS, FAN_WEIGHTS);
         simpleRandom = new Random();
         windRandom = new WeightRandom<>(Wind.values());
-        suitRandom = new WeightRandom<>(new Character[]{'m', 'p', 's'});
+        suitRandom = new WeightRandom<>(NUMBER_SUIT_LIST);
         usedTiles = TreeMultiset.create();
         effectiveTileCount = 0;
         claims = new ArrayList<>();
@@ -40,17 +42,27 @@ public class MCRHandGenerator {
 
     private static final MCRFan[] FANS;
     private static final int[] FAN_WEIGHTS;
+    private static final List<Character> NUMBER_SUIT_LIST;
     private static final Tile[] ORPHANS, WINDS, DRAGONS;
     private static final Set<Tile>[] SUIT_TILE_SETS;
     private static final Set<Tile> TERMINAL_SET, HONOR_SET, ORPHAN_SET,
+            NUMBER_SET,
             EVEN_SET,
-            FIVE_SET, AROUND_FIVE_SET;
+            FIVE_SET, AROUND_FIVE_SET,
+            REVERSIBLE_TILE_SET;
     private static final Set<Claim.Type> RANDOM_CLAIM_TYPES;
 
     static {
         FANS = MCRFan.values();
+        // weights for fans
         FAN_WEIGHTS = new int[FANS.length];
         for (int i = 0; i < FANS.length; i++) {
+            if (FANS[i] == LAST_TILE_DRAW || FANS[i] == LAST_TILE_CLAIM
+                    || FANS[i] == OUT_WITH_REPLACEMENT_TILE || FANS[i] == ROBBING_THE_KONG
+                    || FANS[i] == FLOWER_TILE) {
+                FAN_WEIGHTS[i] = 0;
+                continue;
+            }
             switch (FANS[i].score) {
                 case 88, 64 -> FAN_WEIGHTS[i] = 1;
                 case 48 -> FAN_WEIGHTS[i] = 2;
@@ -62,19 +74,28 @@ public class MCRHandGenerator {
                 case 4, 2, 1 -> FAN_WEIGHTS[i] = 64;
             }
         }
+        // suit list for 3 number suits
+        NUMBER_SUIT_LIST = List.of('m', 'p', 's');
+        // tile sets
         ORPHANS = new Tile[]{M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P};
         WINDS = new Tile[]{E, S, W, N};
         DRAGONS = new Tile[]{C, F, P};
         SUIT_TILE_SETS = new Set[]{
                 Set.of(M1, M2, M3, M4, M5, M6, M7, M8, M9),
-                Set.of(S1, S2, S3, S4, S5, S6, S7, S8, S9),
-                Set.of(P1, P2, P3, P4, P5, P6, P7, P8, P9)
+                Set.of(P1, P2, P3, P4, P5, P6, P7, P8, P9),
+                Set.of(S1, S2, S3, S4, S5, S6, S7, S8, S9)
         };
         TERMINAL_SET = Set.of(M1, M9, P1, P9, S1, S9);
         HONOR_SET = Set.of(E, S, W, N, C, F, P);
         ORPHAN_SET = Set.of(M1, M9, P1, P9, S1, S9, E, S, W, N, C, F, P);
+        NUMBER_SET = Set.of(
+                M1, M2, M3, M4, M5, M6, M7, M8, M9,
+                P1, P2, P3, P4, P5, P6, P7, P8, P9,
+                S1, S2, S3, S4, S5, S6, S7, S8, S9
+        );
         EVEN_SET = Set.of(M2, M4, M6, M8, P2, P4, P6, P8, S2, S4, S6, S8);
         FIVE_SET = Set.of(M5, P5, S5);
+        REVERSIBLE_TILE_SET = Set.of(P1, P2, P3, P4, P5, P8, P9, S2, S4, S5, S6, S8, S9, P);
         AROUND_FIVE_SET = Set.of(M3, M4, M5, M6, M7, P3, P4, P5, P6, P7, S3, S4, S5, S6, S7);
         RANDOM_CLAIM_TYPES = Set.of(CHOW, PUNG, KONG);
     }
@@ -170,15 +191,11 @@ public class MCRHandGenerator {
             case UPPER_FOUR -> generateUpperFour();
             case LOWER_FOUR -> generateLowerFour();
             case BIG_THREE_WINDS -> generateBigThreeWinds();
-            case MIXED_STRAIGHT -> generateBigFourWinds();
-            case REVERSIBLE_TILES -> generateBigFourWinds();
-            case MIXED_TRIPLE_CHOW -> generateBigFourWinds();
-            case MIXED_SHIFTED_PUNGS -> generateBigFourWinds();
-            case CHICKEN_HAND -> generateBigFourWinds();
-            case LAST_TILE_DRAW -> generateBigFourWinds();
-            case LAST_TILE_CLAIM -> generateBigFourWinds();
-            case OUT_WITH_REPLACEMENT_TILE -> generateBigFourWinds();
-            case ROBBING_THE_KONG -> generateBigFourWinds();
+            case MIXED_STRAIGHT -> generateMixedStraight();
+            case REVERSIBLE_TILES -> generateReversibleTiles();
+            case MIXED_TRIPLE_CHOW -> generateMixedTripleChow();
+            case MIXED_SHIFTED_PUNGS -> generateMixedShiftedPungs();
+            case CHICKEN_HAND -> generateChickenHand();
             case ALL_PUNGS -> generateBigFourWinds();
             case HALF_FLUSH -> generateBigFourWinds();
             case MIXED_SHIFTED_CHOWS -> generateBigFourWinds();
@@ -191,7 +208,7 @@ public class MCRHandGenerator {
             case FULLY_CONCEALED_HAND -> generateBigFourWinds();
             case TWO_MELDED_KONGS -> generateBigFourWinds();
             case LAST_TILE -> generateBigFourWinds();
-            default -> throw new IllegalStateException("Unexpected value: " + baseFan);
+            default -> throw new IllegalStateException("Unexpected fan: " + baseFan);
         }
     }
 
@@ -533,10 +550,309 @@ public class MCRHandGenerator {
         generatePair();
     }
 
+    private void generateMixedStraight() {
+        final List<Character> suits = getShuffledSuits();
+        for (int i = 0; i < 3; i++) {
+            appendClaimOrTiles(CHOW, getInstance(i * 3 + 1, suits.get(i)));
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateReversibleTiles() {
+        for (int i = 0; i < 4; i++) {
+            generateClaim(REVERSIBLE_TILE_SET);
+        }
+        generatePair(REVERSIBLE_TILE_SET);
+    }
+
+    private void generateMixedTripleChow() {
+        final List<Character> suits = getShuffledSuits();
+        final int number = simpleRandom.nextInt(1, 8);
+        for (int i = 0; i < 3; i++) {
+            appendClaimOrTiles(CHOW, getInstance(number, suits.get(i)));
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateMixedShiftedPungs() {
+        final List<Character> suits = getShuffledSuits();
+        final int number = simpleRandom.nextInt(1, 8);
+        for (int i = 0; i < 3; i++) {
+            appendPungKongOrTiles(getInstance(number + i, suits.get(i)));
+        }
+        generateClaim();
+        generatePair();
+    }
+
+    private void generateChickenHand() {
+        // honor pair
+        final Tile pairTile = getRandomTile(HONOR_SET);
+        appendNonDeclaredTile(pairTile);
+        appendNonDeclaredTile(pairTile);
+        // claims/tiles
+        final List<Claim> claims = new ArrayList<>();
+        int concealedCount = 0, pungCount = 0;
+        final WeightRandom<Claim.Type> claimTypeRandom = getClaimTypeRandom(Set.of(CHOW, PUNG));
+        for (int i = 0; i < 4; i++) {
+            // decide whether the claim is concealed
+            // when there are 3 melded claims, the last one has to be concealed
+            // when there is no declared tile, the last claim has to be tiles
+            // (the concealed declared tile will turn into a melded one at last)
+            // when there are 3 concealed claims (tiles), the last one has to be melded
+            // (to make it not conflict with the second rule,
+            // we force the third claim after 2 concealed claims to be melded)
+            final boolean isConcealed = (i == 3 && concealedCount == 0)
+                    || lastClaimMustBeTiles()
+                    || (!(i == 2 && concealedCount == 2) && simpleRandom.nextBoolean());
+            // generate the claim type and the start tile
+            // when there is a concealed pung, there must not be another one
+            // when there are 3 pungs, the last claim must not be a pung
+            final Claim.Type claimType = (isConcealed && containsConcealedPung(claims))
+                    || (pungCount == 3) ?
+                    CHOW : claimTypeRandom.next();
+            if (claimType == PUNG) pungCount++;
+            final Set<Tile> tileRange = getTileRangeInChickenHand(claimType, claims);
+            System.out.println(tileRange);
+            System.out.println(claimType);
+            final Set<Tile> actualTileRange = intersect(tileRange,
+                    getUsableTilesByClaimType(ALL_TILE_SET, claimType));
+            final Tile start = getRandomTile(actualTileRange);
+            // append
+            if (isConcealed) {
+                if (claimType == CHOW)
+                    appendConcealedChowWithoutUniqueWait(start);
+                else
+                    appendClaimOrTilesConcealed(claimType, start);
+                concealedCount++;
+            } else {
+                appendClaim(claimType, start, false, true);
+            }
+            claims.add(Claim.create(claimType, start, 0,
+                    isConcealed ? CLAIMED_FROM_SELF : CLAIMED_FROM_OTHER));
+            System.out.println(claims);
+        }
+        // reset options
+        selfDrawn = false;
+        lastTile = false;
+        lastDrawOrClaim = false;
+        kong = false;
+    }
+
     // utilities
 
+    private boolean containsConcealedPung(List<Claim> claims) {
+        for (Claim claim : claims) {
+            if (claim.isConcealed() && claim.type() == PUNG)
+                return true;
+        }
+        return false;
+    }
+
+    private void appendConcealedChowWithoutUniqueWait(Tile start) {
+        final int number = start.number;
+        final char suit = start.suit;
+        // some tiles must not be declared to avoid unique wait
+        if (number == 1) {
+            // only 1 can be declared
+            appendNonDeclaredTile(getInstance(2, suit));
+            appendNonDeclaredTile(getInstance(3, suit));
+            appendTile(start);
+        } else if (number == 7) {
+            // only 9 can be declared
+            appendNonDeclaredTile(start);
+            appendNonDeclaredTile(getInstance(8, suit));
+            appendTile(getInstance(9, suit));
+        } else {
+            appendNonDeclaredTile(getInstance(number + 1, suit));
+            appendTile(start);
+            appendTile(getInstance(number + 2, suit));
+        }
+    }
+
+    /**
+     * Given the tiles/claims already generated,
+     * get the range of tiles applicable to the specified claim type
+     * in order to make a chicken hand.
+     */
+    private Set<Tile> getTileRangeInChickenHand(Claim.Type claimType, List<Claim> claims) {
+        // decide which suits are available
+        // there should be at most 1 suit that has >1 claims (tiles)
+        final Set<Character> possibleSuits = getPossibleSuitsInChickenHand(claims);
+        // initial tile range
+        final Set<Tile> tileRange = new TreeSet<>();
+        for (char suit : possibleSuits) {
+            tileRange.addAll(SUIT_TILE_SETS[getSuitIndex(suit)]);
+        }
+        if (claimType == CHOW) {
+            // remove impossible tiles by chow relations
+            removeTilesByTwoChowRelations(tileRange, claims);
+            removeTilesByThreeChowRelations(tileRange, claims);
+        } else {
+            // remove terminals
+            for (char suit : possibleSuits) {
+                tileRange.remove(getInstance(1, suit));
+                tileRange.remove(getInstance(9, suit));
+            }
+            // remove impossible tiles by pung relations
+            removeTilesByTwoPungRelations(tileRange, claims);
+            removeTilesByThreePungRelations(tileRange, claims);
+        }
+        // remove impossible tiles by tile hog
+        removeTilesByTileHog(tileRange, claimType, claims);
+        return tileRange;
+    }
+
+    private void removeTilesByTileHog(Set<Tile> tileRange, Claim.Type claimType, List<Claim> claims) {
+        final int requiredCount, tileOffsetMin;
+        if (claimType == CHOW) {
+            requiredCount = 1;
+            // chows starting at (i-2) to (i) contains the tile i
+            tileOffsetMin = -2;
+        } else {
+            requiredCount = 3;
+            tileOffsetMin = 0;
+        }
+        // count tiles used in claims
+        final SortedMultiset<Tile> usedTiles = TreeMultiset.create();
+        for (Claim claim : claims) {
+            usedTiles.addAll(Arrays.asList(claim.getTiles()));
+        }
+        // remove tiles that happen to make a tile hog
+        for (Multiset.Entry<Tile> entry : usedTiles.entrySet()) {
+            final Tile tile = entry.getElement();
+            if (entry.getCount() + requiredCount == 4) {
+                for (int i = Math.max(1, tile.number + tileOffsetMin); i <= tile.number; i++) {
+                    tileRange.remove(getInstance(i, tile.suit));
+                }
+            }
+        }
+    }
+
+    private static Set<Character> getPossibleSuitsInChickenHand(List<Claim> claims) {
+        final Set<Character> possibleSuits = new HashSet<>(NUMBER_SUIT_LIST);
+        final Set<Character> visitedSuits = new HashSet<>();
+        boolean containsDupSuit = false;
+        for (Claim claim : claims) {
+            final char suit = claim.start().suit;
+            if (visitedSuits.contains(suit)) {
+                possibleSuits.remove(suit);
+                containsDupSuit = true;
+            }
+            visitedSuits.add(suit);
+        }
+        if (containsDupSuit) {
+            possibleSuits.removeAll(visitedSuits);
+        }
+        return possibleSuits;
+    }
+
+    private void removeTilesByTwoChowRelations(Set<Tile> tileRange, List<Claim> claims) {
+        for (Claim claim : claims) {
+            final char suit = claim.start().suit;
+            final int number = claim.start().number;
+            // short straight
+            if (number >= 4) tileRange.remove(getInstance(number - 3, suit));
+            if (number <= 4) tileRange.remove(getInstance(number + 3, suit));
+            // double chow
+            for (char s : NUMBER_SUIT_LIST) {
+                tileRange.remove(getInstance(number, s));
+            }
+            // two terminal chows
+            if (number == 1) tileRange.remove(getInstance(7, suit));
+            else if (number == 7) tileRange.remove(getInstance(1, suit));
+        }
+    }
+
+    private void removeTilesByThreeChowRelations(Set<Tile> tileRange, List<Claim> claims) {
+        final List<Tile> starts = claims.stream()
+                .filter(c -> c.type() == CHOW)
+                .map(Claim::start)
+                .toList();
+        if (starts.size() < 2) return;
+        for (int i = 0, bound = starts.size(); i < bound - 1; i++) {
+            for (int j = i + 1; j < bound; j++) {
+                final char suit1 = starts.get(i).suit;
+                final int number1 = starts.get(i).number;
+                final char suit2 = starts.get(j).suit;
+                final int number2 = starts.get(j).number;
+                final int small = Math.min(number1, number2);
+                final int large = Math.max(number1, number2);
+                if (suit1 != suit2) {
+                    final char suit3 = getLastSuit(suit1, suit2);
+                    // mixed shifted chows
+                    switch (large - small) {
+                        case 1 -> {
+                            if (small >= 2) tileRange.remove(getInstance(small - 1, suit3));
+                            if (large <= 6) tileRange.remove(getInstance(large + 1, suit3));
+                        }
+                        case 2 -> tileRange.remove(getInstance(small + 1, suit3));
+                    }
+                    // mixed straight (1, 4, 7)
+                    if (large % 3 == 1 && small % 3 == 1) {
+                        // large must not be the same as small by hypothesis
+                        tileRange.remove(getInstance(12 - large - small, suit3));
+                    }
+                }
+                // pure chows has been forbidden by preventing 3 claims in the same suit
+                // triple chow has been forbidden by preventing double chow
+            }
+        }
+    }
+
+    private char getLastSuit(char suit1, char suit2) {
+        if (suit1 == suit2)
+            throw new IllegalArgumentException("Suits should be different");
+        final Set<Character> suits = new HashSet<>(NUMBER_SUIT_LIST);
+        suits.remove(suit1);
+        suits.remove(suit2);
+        return suits.stream().toList().getFirst();
+    }
+
+    private void removeTilesByTwoPungRelations(Set<Tile> tileRange, List<Claim> claims) {
+        for (Claim claim : claims) {
+            final int number = claim.start().number;
+            // double pung
+            for (char s : NUMBER_SUIT_LIST) {
+                tileRange.remove(getInstance(number, s));
+            }
+        }
+    }
+
+    private void removeTilesByThreePungRelations(Set<Tile> tileRange, List<Claim> claims) {
+        final List<Tile> starts = claims.stream()
+                .filter(c -> c.type() == PUNG)
+                .map(Claim::start)
+                .sorted()
+                .toList();
+        if (starts.size() < 2) return;
+        for (int i = 0, bound = starts.size(); i < bound - 1; i++) {
+            for (int j = i + 1; j < bound; j++) {
+                final char suit1 = starts.get(i).suit;
+                final int number1 = starts.get(i).number;
+                final char suit2 = starts.get(j).suit;
+                final int number2 = starts.get(j).number;
+                final int small = Math.min(number1, number2);
+                final int large = Math.max(number1, number2);
+                if (suit1 != suit2) {
+                    final char suit3 = getLastSuit(suit1, suit2);
+                    // mixed shifted pungs
+                    switch (large - small) {
+                        case 1 -> {
+                            if (small >= 2) tileRange.remove(getInstance(small - 1, suit3));
+                            if (large <= 8) tileRange.remove(getInstance(large + 1, suit3));
+                        }
+                        case 2 -> tileRange.remove(getInstance(small + 1, suit3));
+                    }
+                }
+                // triple pung has been forbidden by preventing double pung
+            }
+        }
+    }
+
     private List<Character> getShuffledSuits() {
-        final List<Character> suits = new ArrayList<>(List.of('m', 'p', 's'));
+        final List<Character> suits = new ArrayList<>(NUMBER_SUIT_LIST);
         Collections.shuffle(suits);
         return suits;
     }
@@ -565,30 +881,30 @@ public class MCRHandGenerator {
     }
 
     private void generateClaim(Set<Tile> tileRange) {
-        generateClaim(tileRange, RANDOM_CLAIM_TYPES, false);
+        generateClaim(tileRange, RANDOM_CLAIM_TYPES, false, false);
     }
 
     private void generateClaim(Claim.Type claimType) {
-        generateClaim(ALL_TILE_SET, Set.of(claimType), false);
+        generateClaim(ALL_TILE_SET, Set.of(claimType), false, false);
     }
 
     private void generateChow(Set<Tile> tileRange) {
-        generateClaim(tileRange, Set.of(CHOW), false);
+        generateClaim(tileRange, Set.of(CHOW), false, false);
     }
 
     private void generatePungOrKong(Set<Tile> tileRange) {
-        generateClaim(tileRange, Set.of(PUNG, KONG), false);
+        generateClaim(tileRange, Set.of(PUNG, KONG), false, false);
     }
 
     private void generateConcealedPungOrKong() {
-        generateClaim(ALL_TILE_SET, Set.of(PUNG, KONG), true);
+        generateClaim(ALL_TILE_SET, Set.of(PUNG, KONG), true, false);
     }
 
     /**
      * Generate and append a random CHOW/PUNG/KONG.
      * Please make sure that claimTypeRange is a subset of RANDOM_CLAIM_TYPES.
      */
-    private void generateClaim(Set<Tile> tileRange, Set<Claim.Type> claimTypeRange, boolean mustBeConcealed) {
+    private void generateClaim(Set<Tile> tileRange, Set<Claim.Type> claimTypeRange, boolean mustBeConcealed, boolean mustBeMelded) {
         // generate a claim or 3 tiles
         Set<Tile> newRange;
         Claim.Type actualClaimType;
@@ -604,10 +920,13 @@ public class MCRHandGenerator {
             possibleTypes.remove(actualClaimType);
         } while (newRange.isEmpty());
         // append the claim/tiles
+        final Tile start = getRandomTile(newRange);
         if (mustBeConcealed)
-            appendClaimOrTilesConcealed(actualClaimType, getRandomTile(newRange));
+            appendClaimOrTilesConcealed(actualClaimType, start);
+        else if (mustBeMelded)
+            appendClaim(actualClaimType, start, false, true);
         else
-            appendClaimOrTiles(actualClaimType, getRandomTile(newRange));
+            appendClaimOrTiles(actualClaimType, start);
     }
 
     private void generatePair(Set<Tile> range) {
@@ -674,7 +993,7 @@ public class MCRHandGenerator {
         // when this is the last claim to add and the declared tile is null
         // the claim has to be added as 3 tiles
         if (type == KONG)
-            appendKong(start, false);
+            appendKong(start, false, false);
         else
             appendClaimOrTiles(type, start, lastClaimMustBeTiles());
     }
@@ -690,7 +1009,7 @@ public class MCRHandGenerator {
         // add the triple as a concealed claim (kong only) or 3 concealed tiles
         final Tile declaredTileBefore = declaredTile;
         if (type == KONG)
-            appendKong(start, true);
+            appendKong(start, true, false);
         else
             appendClaimOrTiles(type, start, true);
         // if the claim includes the declared tile, the declared tile should be concealed
@@ -710,10 +1029,10 @@ public class MCRHandGenerator {
             throw new IllegalArgumentException("This method is not applicable to KONGs");
         }
         // knitted chow must not be a claim
-        // claims other than kongs must not be concealed
+        // other types of claims decide if they are concealed randomly
         if (type != KNITTED_CHOW && !mustBeTiles && simpleRandom.nextBoolean()) {
             // claim
-            appendClaim(type, start, mustBeTiles);
+            appendClaim(type, start, false, false);
         } else {
             // non-claim tiles
             for (Tile tile : tmpClaim.getTiles()) {
@@ -722,8 +1041,8 @@ public class MCRHandGenerator {
         }
     }
 
-    private void appendKong(Tile start, boolean mustBeConcealed) {
-        appendClaim(KONG, start, mustBeConcealed);
+    private void appendKong(Tile start, boolean mustBeConcealed, boolean mustBeMelded) {
+        appendClaim(KONG, start, mustBeConcealed, mustBeMelded);
     }
 
     private void appendPair(Tile tile) {
@@ -731,7 +1050,11 @@ public class MCRHandGenerator {
         appendTile(tile);
     }
 
-    private void appendClaim(Claim.Type type, Tile start, boolean mustBeConcealed) {
+    private void appendClaim(Claim.Type type, Tile start, boolean mustBeConcealed, boolean mustBeMelded) {
+        if (mustBeConcealed && mustBeMelded)
+            throw new IllegalArgumentException("The arguments mustBeConcealed and mustBeMelded should not be both true");
+        if (mustBeConcealed && type != KONG)
+            throw new IllegalArgumentException("Non-kong claims cannot be concealed");
         switch (type) {
             case CHOW -> {
                 claims.add(Claim.create(type, start, simpleRandom.nextInt(3), CLAIMED_FROM_LEFT));
@@ -744,8 +1067,13 @@ public class MCRHandGenerator {
                 usedTiles.add(start, 3);
             }
             case KONG -> {
-                // mustBeConcealed only works for KONG
-                claims.add(Claim.create(type, start, 0, mustBeConcealed ? 0 : simpleRandom.nextInt(0, 4)));
+                // mustBeConcealed/mustBeMelded only works for KONG
+                claims.add(Claim.create(type, start, 0,
+                        mustBeConcealed ? 0 :
+                                (mustBeMelded ?
+                                        simpleRandom.nextInt(1, 4) :
+                                        simpleRandom.nextInt(0, 4))
+                ));
                 usedTiles.add(start, 4);
             }
         }
@@ -822,6 +1150,15 @@ public class MCRHandGenerator {
     private Set<Tile> getRandomSuitTileSet() {
         final int suitIndex = simpleRandom.nextInt(3);
         return SUIT_TILE_SETS[suitIndex];
+    }
+
+    private int getSuitIndex(char suit) {
+        return switch (suit) {
+            case 'm' -> 0;
+            case 'p' -> 1;
+            case 's' -> 2;
+            default -> throw new IllegalArgumentException("Invalid suit " + suit);
+        };
     }
 
     private MCRHand getTmpHand() {

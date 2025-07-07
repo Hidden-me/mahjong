@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static net.hidme.mahjong.core.data.Claim.CLAIMED_FROM_SELF;
 import static net.hidme.mahjong.core.data.Claim.Type.*;
 import static net.hidme.mahjong.core.data.MCRFan.*;
 import static net.hidme.mahjong.core.data.Tile.*;
@@ -237,7 +236,7 @@ public class MCRTotalFanCalc {
     private void checkMeldedHand() {
         if (hand.claims.length == 4 && !hand.selfDrawn) {
             for (Claim claim : hand.claims) {
-                if (claim.claimedFrom() == CLAIMED_FROM_SELF) return;
+                if (claim.isConcealed()) return;
             }
             result.addFan(MELDED_HAND);
         }
@@ -421,7 +420,7 @@ public class MCRTotalFanCalc {
     private static final int[] NINE_GATE_NUMBERS = {1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9};
 
     private void checkNineGates() {
-        if (!(structure instanceof NormalHandStructure normalStruct)) return;
+        if (!(structure instanceof NormalHandStructure)) return;
         if (hand.hasClaim()) return;
         // all tiles should be of one number suit
         if (!hand.isOfPureNumberSuit()) return;
@@ -471,7 +470,7 @@ public class MCRTotalFanCalc {
         if (claims.size() != 1) return;
         // check the count of concealed kongs
         final Claim claim = claims.getFirst();
-        if ((claim.claimedFrom() == CLAIMED_FROM_SELF ? 1 : 0) == concealedCount) {
+        if ((claim.isConcealed() ? 1 : 0) == concealedCount) {
             result.addFan(FAN_ONE_KONG[concealedCount]);
         }
     }
@@ -488,7 +487,7 @@ public class MCRTotalFanCalc {
         }
         // check the count of concealed kongs
         if (Stream.of(normalStruct.claims)
-                .filter(c -> c.type() == KONG && c.claimedFrom() == CLAIMED_FROM_SELF)
+                .filter(c -> c.type() == KONG && c.isConcealed())
                 .count() == concealedCount) {
             result.addFan(FAN_TWO_KONGS[concealedCount]);
         }
@@ -508,7 +507,7 @@ public class MCRTotalFanCalc {
     private void checkConcealedPungs(int pungCount) {
         if (!(structure instanceof NormalHandStructure normalStruct)) return;
         if (Stream.of(normalStruct.claims)
-                .filter(c -> c.type().isPung() && c.claimedFrom() == CLAIMED_FROM_SELF)
+                .filter(c -> c.type().isPung() && c.isConcealed())
                 .count() == pungCount) {
             result.addFan(FAN_CONCEALED_PUNGS[pungCount]);
         }

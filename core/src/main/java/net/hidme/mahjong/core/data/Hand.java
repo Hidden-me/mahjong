@@ -75,7 +75,7 @@ public abstract class Hand {
     public SortedMultiset<Tile> getConcealedTiles() {
         final SortedMultiset<Tile> tiles = TreeMultiset.create(List.of(this.tiles));
         for (Claim claim : claims) {
-            if (claim.claimedFrom() == 0)
+            if (claim.isConcealed())
                 tiles.addAll(List.of(claim.getTiles()));
         }
         return tiles;
@@ -109,7 +109,7 @@ public abstract class Hand {
 
     public boolean isConcealed() {
         for (Claim claim : claims) {
-            if (claim.claimedFrom() != 0) return false;
+            if (!claim.isConcealed()) return false;
         }
         return true;
     }

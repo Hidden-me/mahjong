@@ -4,6 +4,7 @@ import java.util.*;
 
 public interface CollectionUtils {
 
+    @SafeVarargs
     static <T> Set<T> setOf(T... elements) {
         final Set<T> set = new HashSet<>();
         Collections.addAll(set, elements);
@@ -17,6 +18,15 @@ public interface CollectionUtils {
         final List<T> newList = new ArrayList<>(list);
         newList.remove(index);
         return newList;
+    }
+
+    /**
+     * Return the intersection of two sets.
+     */
+    static <T> Set<T> intersect(Set<T> set1, Set<T> set2) {
+        final Set<T> newSet = new HashSet<>(set1);
+        newSet.retainAll(set2);
+        return newSet;
     }
 
 }

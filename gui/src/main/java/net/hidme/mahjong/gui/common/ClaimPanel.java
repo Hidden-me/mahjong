@@ -50,7 +50,7 @@ public class ClaimPanel extends JPanel {
         final int sidewaysTileIndex = getSidewaysTileIndex(claim);
         final int claimSize = claim.size();
         // given the claim tiles, update slots
-        final boolean isConcealedKong = claim.type() == Claim.Type.KONG && claim.claimedFrom() == 0;
+        final boolean isConcealedKong = claim.type() == Claim.Type.KONG && claim.isConcealed();
         int i = 0;
         for (TileLabel slot : slots) {
             if (i >= claimSize) {
